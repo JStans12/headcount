@@ -18,4 +18,19 @@ class TestDistrictRepo < Minitest::Test
     assert_equal "ACADEMY 20", dr.find_by_name("ACADEMY 20").name
   end
 
+  def test_load_data_creates_district_objects
+    dr = DistrictRepository.new
+    dr.load_data({:enrollment => {:kindergarten => "./data/Kindergarteners test file.csv"}})
+
+    assert_equal 3, dr.districts.length
+  end
+
+  def test_find_all_matching
+    dr = DistrictRepository.new
+    dr.load_data({:enrollment => {:kindergarten => "./data/Kindergarteners test file.csv"}})
+
+    assert_equal 3, dr.find_all_matching("AD").length
+    assert_equal 1, dr.find_all_matching("AC").length
+  end
+
 end

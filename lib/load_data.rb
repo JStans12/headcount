@@ -2,6 +2,7 @@ require 'csv'
 require './lib/district_repository'
 
 module LoadData
+  extend self
 
   def load_data(file_hash)
     file_name = file_hash[:enrollment][:kindergarten]

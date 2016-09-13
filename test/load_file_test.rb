@@ -21,9 +21,4 @@ class TestLoadData < Minitest::Test
     assert_equal 3, csv_parse("./data/Kindergarteners test file.csv").length
   end
 
-  def test_district_objects_are_created
-    dr = DistrictRepository.new
-
-    assert_equal 3, dr.districts.length
-  end
 end
