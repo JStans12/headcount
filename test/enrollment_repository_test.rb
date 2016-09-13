@@ -15,7 +15,7 @@ class TestEnrollmentRepo < Minitest::Test
     def test_find_by_name_finds_enrollment
 
       er = EnrollmentRepository.new
-      er.enrollments["ACADEMY 20".to_sym] = Enrollment.new({:name => "ACADEMY 20", :kindergarten_participation => {2010 => 0.3915, 2011 => 0.35356, 2012 => 0.2677}})
+      er.enrollments["ACADEMY 20"] = Enrollment.new({:name => "ACADEMY 20", :kindergarten_participation => {2010 => 0.3915, 2011 => 0.35356, 2012 => 0.2677}})
 
       assert_equal Enrollment, er.find_by_name("ACADEMY 20").class
       assert_equal "ACADEMY 20", er.find_by_name("ACADEMY 20").name

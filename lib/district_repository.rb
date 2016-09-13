@@ -10,7 +10,7 @@ class DistrictRepository
   end
 
   def find_by_name(name)
-    @districts[name.to_sym]
+    @districts[name]
   end
 
   def find_all_matching(name_snip)
