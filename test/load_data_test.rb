@@ -1,7 +1,7 @@
 require 'minitest/autorun'
 require 'minitest/pride'
-require './lib/district_repository'
-require './lib/load_data'
+require_relative '../lib/district_repository'
+require_relative '../lib/load_data'
 
 class TestLoadData < Minitest::Test
   include LoadData

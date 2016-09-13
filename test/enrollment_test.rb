@@ -1,7 +1,7 @@
 require 'minitest/autorun'
 require 'minitest/pride'
-require './lib/district_repository'
-require './lib/enrollment'
+require_relative '../lib/district_repository'
+require_relative '../lib/enrollment'
 
 class TestEnrollment < Minitest::Test
   def test_enrollment_is_initialized_with_name

@@ -1,4 +1,5 @@
-require './lib/enrollment'
+require_relative '../lib/enrollment'
+
 class EnrollmentRepository
   include LoadData
     attr_reader :enrollments

@@ -1,8 +1,8 @@
 require 'minitest/autorun'
 require 'minitest/pride'
-require './lib/district_repository'
-require './lib/district'
-require './lib/enrollment_repository'
+require_relative '../lib/district_repository'
+require_relative '../lib/district'
+require_relative '../lib/enrollment_repository'
 
 class TestEnrollmentRepo < Minitest::Test
 

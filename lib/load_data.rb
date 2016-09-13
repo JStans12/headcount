@@ -1,5 +1,5 @@
 require 'csv'
-require './lib/district_repository'
+require_relative '../lib/district_repository'
 
 module LoadData
   extend self

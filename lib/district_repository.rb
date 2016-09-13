@@ -1,5 +1,5 @@
-require './lib/load_data'
-require './lib/district'
+require_relative '../lib/load_data'
+require_relative '../lib/district'
 
 class DistrictRepository
   include LoadData
