@@ -9,7 +9,7 @@ class EnrollmentRepository
   end
 
   def find_by_name(name)
-    @enrollments[name.to_sym]
+    @enrollments[name]
   end
 
   def load_data(file_hash)
