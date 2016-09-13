@@ -20,7 +20,7 @@ class DistrictRepository
   end
 
   def load_data(file_hash)
-    compiled_names = LoadData.load_data(file_hash)
+    compiled_names = LoadData.load_data_district(file_hash)
     create_district_objects(compiled_names)
   end
 
