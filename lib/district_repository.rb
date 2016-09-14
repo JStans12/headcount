@@ -14,13 +14,11 @@ class DistrictRepository
   end
 
   def find_all_matching(name_snip)
-    @districts.select do |d|
-      d.include?(name_snip)
-    end
+    @districts.select { |d| d.include?(name_snip) }
   end
 
   def load_data(file_hash)
-    compiled_names = LoadData.load_data_district(file_hash)
+    compiled_names = LoadData.load_data(file_hash)
     create_district_objects(compiled_names)
   end
 

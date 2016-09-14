@@ -13,7 +13,7 @@ class EnrollmentRepository
   end
 
   def load_data(file_hash)
-    compiled_names = LoadData.load_data_enrollment(file_hash)
+    compiled_names = LoadData.load_data(file_hash)
     create_enrollment_objects(compiled_names)
   end
 
