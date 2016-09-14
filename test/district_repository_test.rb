@@ -51,7 +51,7 @@ class TestDistrictRepo < Minitest::Test
 
   def test_districts_are_linked_to_enrollments
     dr = DistrictRepository.new
-    dr.load_data({:enrollment => {:kindergarten => "./test/fixtures/Kindergarteners test file.csv"}})
+    dr.load_data({:enrollment => {:kindergarten => "./test/fixtures/Kindergarteners test file2.csv"}})
 
     district = dr.find_by_name("ACADEMY 20")
     assert_equal (0.43628), district.enrollment.kindergarten_participation_in_year(2010)
