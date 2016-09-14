@@ -2,6 +2,8 @@ require 'minitest/autorun'
 require 'minitest/pride'
 require_relative '../lib/district_repository'
 require_relative '../lib/district'
+require_relative '../lib/enrollment_repository'
+require_relative '../lib/enrollment'
 
 class TestDistrictRepo < Minitest::Test
 
@@ -31,6 +33,28 @@ class TestDistrictRepo < Minitest::Test
 
     assert_equal 3, dr.find_all_matching("AD").length
     assert_equal 1, dr.find_all_matching("AC").length
+  end
+
+  def test_load_on_district_creates_enrollment_repository
+    dr = DistrictRepository.new
+    dr.load_data({:enrollment => {:kindergarten => "./test/fixtures/Kindergarteners test file.csv"}})
+
+    assert_equal EnrollmentRepository, dr.enrollment_repository.class
+  end
+
+  def test_load_on_district_populates_er_with_enrollments
+    dr = DistrictRepository.new
+    dr.load_data({:enrollment => {:kindergarten => "./test/fixtures/Kindergarteners test file.csv"}})
+
+    assert_equal Enrollment, dr.enrollment_repository.enrollments["ACADEMY 20"].class
+  end
+
+  def test_districts_are_linked_to_enrollments
+    dr = DistrictRepository.new
+    dr.load_data({:enrollment => {:kindergarten => "./test/fixtures/Kindergarteners test file.csv"}})
+
+    district = dr.find_by_name("ACADEMY 20")
+    assert_equal (0.43628), district.enrollment.kindergarten_participation_in_year(2010)
   end
 
 end
