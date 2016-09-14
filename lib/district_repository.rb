@@ -38,7 +38,7 @@ class DistrictRepository
 
   def link_enrollments_to_districts
     @districts.each do |dname, dobject|
-      dobject.enrollment = @enrollment_repository.enrollments.find { |ekey, evalue| dname = ekey }[1]
+      dobject.enrollment = @enrollment_repository.enrollments.find { |ekey, evalue| dname == ekey }[1]
     end
   end
 
