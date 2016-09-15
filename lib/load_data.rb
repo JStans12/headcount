@@ -16,24 +16,22 @@ module LoadData
 
   def compile_names(file_content, enrollment_type)
     file_content.reduce([]) do |result, line|
-      unless result.any? {|e| e.values.include?(line[:location])}
-        result << {name: line[:location], enrollment_type => Hash.new}
-      end
-      current_enrollment = result.detect do |h| # finds / retrieves
-        h.values.include?(line[:location])
-      end
-      current_enrollment[enrollment_type][line[:timeframe].to_i] = line[:data].to_f
+      result << hash_to_store_data(enrollment_type, line) unless district_is_included(result, line)
+      current_enrollment = result.detect { |h| h.values.include?(line[:location]) }
+      add_data_to_existing_enrollment(current_enrollment, line, enrollment_type)
       result
-
-      # district stored already?
-      # puts data together / packaging / assembling district data / prepackage
-      # adding that set of district data to our collection
-      #
-
-
-
-
     end
   end
 
+  def district_is_included(result, line)
+    result.any? {|e| e.values.include?(line[:location])}
+  end
+
+  def hash_to_store_data(enrollment_type, line)
+    {name: line[:location], enrollment_type => Hash.new}
+  end
+
+  def add_data_to_existing_enrollment(current_enrollment, line, enrollment_type)
+    current_enrollment[enrollment_type][line[:timeframe].to_i] = line[:data].to_f
+  end
 end
