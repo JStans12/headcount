@@ -1,3 +1,5 @@
+require 'simplecov'
+SimpleCov.start
 require 'minitest/autorun'
 require 'minitest/pride'
 require_relative '../lib/district_repository'
@@ -80,6 +82,7 @@ class TestDistrictRepo < Minitest::Test
         :high_school_graduation => "./data/High school graduation rates.csv"
       }
     })
-    assert_equal 5, dr.enrollment_repository.enrollments["ACADEMY 20"]
+    assert_equal 0.47883, dr.enrollment_repository.enrollments["ACADEMY 20"].data[:kindergarten_participation][2012]
+    assert_equal 0.88983, dr.enrollment_repository.enrollments["ACADEMY 20"].data[:high_school_graduation][2012]
   end
 end

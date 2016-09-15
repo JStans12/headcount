@@ -1,3 +1,5 @@
+require 'simplecov'
+SimpleCov.start
 require 'minitest/autorun'
 require 'minitest/pride'
 require_relative '../lib/headcount_analyst'
@@ -18,7 +20,7 @@ class TestHeadCountAnalyst < Minitest::Test
     ha = HeadcountAnalyst.new(dr)
     district = dr.find_by_name("ACADEMY 20")
 
-    assert_equal 0.4064509090909091, ha.find_average_participation(district)
+    assert_equal 0.4064509090909091, ha.find_average_participation(district, :kindergarten_participation)
   end
 
   def test_can_compare_participation_with_state_participation
@@ -45,4 +47,13 @@ class TestHeadCountAnalyst < Minitest::Test
     assert_equal 1.2576413758640794, ha.kindergarten_participation_rate_variation_trend('ACADEMY 20', :against => 'Colorado')[2004]
   end
 
+  def test_can_compare_kindergarten_participation_against_highschool_graduation_by_district
+    dr = DistrictRepository.new
+    dr.load_data({:enrollment => {:kindergarten => "./data/Kindergartners in full-day program.csv",
+                                  :high_school_graduation => "./data/High school graduation rates.csv"}})
+    ha = HeadcountAnalyst.new(dr)
+
+    assert_equal 0.5485413176167342, ha.kindergarten_participation_against_high_school_graduation('MONTROSE COUNTY RE-1J')
+    assert_equal 0.8005516618636318, ha.kindergarten_participation_against_high_school_graduation('STEAMBOAT SPRINGS RE-2')
+  end
 end

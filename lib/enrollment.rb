@@ -18,4 +18,12 @@ class Enrollment
     data_name = data.keys[1]
     @data = {data_name => data[data_name]}
   end
+
+  def graduation_rate_by_year
+    @data[:high_school_graduation]
+  end
+
+  def graduation_rate_in_year(year)
+    @data[:high_school_graduation][year]
+  end
 end

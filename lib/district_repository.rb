@@ -19,8 +19,7 @@ class DistrictRepository
   end
 
   def load_data(file_hash)
-    file_names = find_file_names(file_hash)
-    file_names.each do |file_name|
+    find_file_names(file_hash).each do |file_name|
       compiled_names = LoadData.load_data(file_name)
       create_district_objects(compiled_names)
       build_enrollment_repository(file_hash)
@@ -44,8 +43,8 @@ class DistrictRepository
   end
 
   def link_enrollments_to_districts
-    @districts.each do |dname, dobject|
-      dobject.enrollment = @enrollment_repository.enrollments.find { |ekey, evalue| dname == ekey }[1]
+    @districts.each do |district_name, district_object|
+      district_object.enrollment = @enrollment_repository.enrollments.find { |enrollment_name, enrollment_object| district_name == enrollment_name }[1]
     end
   end
 

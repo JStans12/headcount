@@ -1,3 +1,5 @@
+require 'simplecov'
+SimpleCov.start
 require 'minitest/autorun'
 require 'minitest/pride'
 require_relative '../lib/district_repository'
@@ -17,7 +19,7 @@ class TestLoadData < Minitest::Test
   end
 
   def test_array_is_loaded_with_hash_objects
-    array_of_enrollments = compile_names_kindergarten(csv_parse("./test/fixtures/Kindergarteners test file.csv"))
+    array_of_enrollments = compile_names(csv_parse("./test/fixtures/Kindergarteners test file.csv"), :kindergarten_participation)
 
     assert_equal 0.38456, array_of_enrollments[0][:kindergarten_participation][2008]
   end
