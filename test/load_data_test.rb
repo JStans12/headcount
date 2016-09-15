@@ -10,7 +10,7 @@ class TestLoadData < Minitest::Test
 
   def test_file_name_returns_file_name
 
-      assert_equal 181, load_data([:kindergarten, "./data/Kindergartners in full-day program.csv"]).length
+      assert_equal 181, load_data([:enrollment, :kindergarten, "./data/Kindergartners in full-day program.csv"]).length
   end
 
   def test_csv_file_loaded_into_program

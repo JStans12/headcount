@@ -20,15 +20,19 @@ class DistrictRepository
 
   def load_data(file_hash)
     find_file_names(file_hash).each do |file_name|
-      compiled_names = LoadData.load_data(file_name)
-      create_district_objects(compiled_names)
-      build_enrollment_repository(file_hash)
-      link_enrollments_to_districts
+      compiled_names = LoadData.load_data(file_name.flatten)
+      load_for_enrollment(file_hash, compiled_names) if file_name.flatten[0] == :enrollment
     end
   end
 
+  def load_for_enrollment(file_hash, compiled_names)
+    create_district_objects(compiled_names)
+    build_enrollment_repository(file_hash)
+    link_enrollments_to_districts
+  end
+
   def find_file_names(file_hash)
-    file_hash[:enrollment].to_a
+    file_hash.reduce([]) { |r,(k,v)| r << v.to_a.map { |f| f.unshift(k) } ;r }
   end
 
   def create_district_objects(compiled_names)

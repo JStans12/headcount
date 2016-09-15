@@ -5,9 +5,9 @@ module LoadData
   extend self
 
   def load_data(file_name)
-    loaded_data = csv_parse(file_name[1])
-    return compile_names(loaded_data, :kindergarten_participation) if file_name[0] == :kindergarten
-    return compile_names(loaded_data, :high_school_graduation) if file_name[0] == :high_school_graduation
+    loaded_data = csv_parse(file_name[2])
+    return compile_names(loaded_data, :kindergarten_participation) if file_name[1] == :kindergarten
+    return compile_names(loaded_data, :high_school_graduation) if file_name[1] == :high_school_graduation
   end
 
   def csv_parse(file_name)
