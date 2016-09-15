@@ -19,15 +19,21 @@ class DistrictRepository
   end
 
   def load_data(file_hash)
-    compiled_names = LoadData.load_data(file_hash)
-    create_district_objects(compiled_names)
-    build_enrollment_repository(file_hash)
-    link_enrollments_to_districts
+    find_file_names(file_hash).each do |file_name|
+      compiled_names = LoadData.load_data(file_name)
+      create_district_objects(compiled_names)
+      build_enrollment_repository(file_hash)
+      link_enrollments_to_districts
+    end
+  end
+
+  def find_file_names(file_hash)
+    file_hash[:enrollment].to_a
   end
 
   def create_district_objects(compiled_names)
     compiled_names.each do |name|
-      @districts[name[:name]] = District.new(name)
+      @districts[name[:name]] = District.new(name) unless @districts[name[:name]]
     end
   end
 
@@ -37,8 +43,8 @@ class DistrictRepository
   end
 
   def link_enrollments_to_districts
-    @districts.each do |dname, dobject|
-      dobject.enrollment = @enrollment_repository.enrollments.find { |ekey, evalue| dname == ekey }[1]
+    @districts.each do |district_name, district_object|
+      district_object.enrollment = @enrollment_repository.enrollments.find { |enrollment_name, enrollment_object| district_name == enrollment_name }[1]
     end
   end
 

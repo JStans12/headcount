@@ -1,4 +1,5 @@
 require_relative '../lib/enrollment'
+require 'pry'
 
 class EnrollmentRepository
   include LoadData
@@ -13,13 +14,31 @@ class EnrollmentRepository
   end
 
   def load_data(file_hash)
-    compiled_names = LoadData.load_data(file_hash)
-    create_enrollment_objects(compiled_names)
+    find_file_names(file_hash).each do |file_name|
+      compiled_names = LoadData.load_data(file_name)
+      assign_enrollment_objects(compiled_names)
+    end
   end
 
-  def create_enrollment_objects(compiled_names)
+  def find_file_names(file_hash)
+    file_hash[:enrollment].to_a
+  end
+
+  def assign_enrollment_objects(compiled_names)
     compiled_names.each do |current_enrollment|
-      @enrollments[current_enrollment[:name]] = Enrollment.new(current_enrollment)
+      add_to_enrollments(compiled_names) if @enrollments[current_enrollment[:name]]
+      create_enrollment_object(current_enrollment) unless @enrollments[current_enrollment[:name]]
+    end
+  end
+
+  def create_enrollment_object(current_enrollment)
+    @enrollments[current_enrollment[:name]] = Enrollment.new(current_enrollment)
+  end
+
+  def add_to_enrollments(compiled_names)
+    compiled_names.each do |current_enrollment|
+      existing_enrollment = @enrollments.find { |enrollment| enrollment[1].name == current_enrollment[:name] }
+      current_enrollment.each { |enrollment_key, enrollment_data| existing_enrollment[1].data[enrollment_key] = enrollment_data unless enrollment_key == :name }
     end
   end
 
