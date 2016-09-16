@@ -4,6 +4,7 @@ require 'minitest/autorun'
 require 'minitest/pride'
 require_relative '../lib/district_repository'
 require_relative '../lib/load_data'
+require_relative '../lib/statewide_test_repository'
 
 class TestLoadData < Minitest::Test
   include LoadData
@@ -19,8 +20,15 @@ class TestLoadData < Minitest::Test
   end
 
   def test_array_is_loaded_with_hash_objects
-    array_of_enrollments = compile_names(csv_parse("./test/fixtures/Kindergarteners test file.csv"), :kindergarten_participation)
+    array_of_enrollments = compile_names_enrollment(csv_parse("./test/fixtures/Kindergarteners test file.csv"), :kindergarten_participation)
 
     assert_equal 0.38456, array_of_enrollments[0][:kindergarten_participation][2008]
+  end
+
+  def test_load_data_can_load_a_third_grade_file
+
+    loaded_data = LoadData.load_data([:statewide_testing, :third_grade, './test/fixtures/third grade students score fix.csv'])
+
+    assert_equal 3, loaded_data.length
   end
 end

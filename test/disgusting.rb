@@ -21,5 +21,4 @@ class TestSomeNastyShit < Minitest::Test
       :writing => "./data/Average proficiency on the CSAP_TCAP by race_ethnicity_ Writing.csv"
     }
   })
-
 end

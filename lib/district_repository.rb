@@ -22,12 +22,13 @@ class DistrictRepository
     find_file_names(file_hash).each do |file_name|
       compiled_names = LoadData.load_data(file_name.flatten)
       load_for_enrollment(file_hash, compiled_names) if file_name.flatten[0] == :enrollment
+      #load_for_statewide(file_hash, compiled_names)
     end
   end
 
   def load_for_enrollment(file_hash, compiled_names)
     create_district_objects(compiled_names)
-    build_enrollment_repository(file_hash)
+    build_enrollment_repository(file_hash.select { |k,v| k == :enrollment })
     link_enrollments_to_districts
   end
 
