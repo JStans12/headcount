@@ -5,7 +5,7 @@ require 'minitest/pride'
 require_relative '../lib/enrollment'
 
 class TestStatewideTestRepository < Minitest::Test
-
+  
   def test_loading_data_to_test_repo_can_load_data
     skip
     str = StatewideTestRepository.new
@@ -13,10 +13,10 @@ class TestStatewideTestRepository < Minitest::Test
     str.load_data({
       :statewide_testing => {
         :third_grade => "./data/3rd grade students scoring proficient or above on the CSAP_TCAP.csv",
-        :eighth_grade => "./data/8th grade students scoring proficient or above on the CSAP_TCAP.csv",
-        :math => "./data/Average proficiency on the CSAP_TCAP by race_ethnicity_ Math.csv",
-        :reading => "./data/Average proficiency on the CSAP_TCAP by race_ethnicity_ Reading.csv",
-        :writing => "./data/Average proficiency on the CSAP_TCAP by race_ethnicity_ Writing.csv"
+        :eighth_grade => "./data/8th grade students scoring proficient or above on the CSAP_TCAP.csv"
+        # :math => "./data/Average proficiency on the CSAP_TCAP by race_ethnicity_ Math.csv",
+        # :reading => "./data/Average proficiency on the CSAP_TCAP by race_ethnicity_ Reading.csv",
+        # :writing => "./data/Average proficiency on the CSAP_TCAP by race_ethnicity_ Writing.csv"
         }
       })
 

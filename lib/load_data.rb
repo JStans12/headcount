@@ -51,29 +51,27 @@ module LoadData
   def compile_names_statewide_grade(file_content, subject)
     file_content.reduce([]) do |result, line|
       result << hash_to_store_data(subject, line) unless district_is_included(result, line)
-      current_grade = result.detect { |h| h.values.include?(line[:location]) }
-      current_grade[subject] = Hash.new unless current_grade[subject]
-      current_grade[subject][line[:timeframe]] = Hash.new unless current_grade[subject][line[:timeframe]]
-      current_year = current_grade[subject][line[:timeframe]]
+      current_statewide_test = result.detect { |h| h.values.include?(line[:location]) }
+      current_statewide_test[subject] = Hash.new unless current_statewide_test[subject]
+      current_statewide_test[subject][line[:timeframe]] = Hash.new unless current_statewide_test[subject][line[:timeframe]]
+      current_year = current_statewide_test[subject][line[:timeframe]]
       current_year[line[:score]] = line[:data]
       result
     end
   end
 
-  # def year_is_included(grade, line)
-  #   grade.any? {|g| g.values.include?(line[:timeframe])}
+  # POSSIBLILITIES TO BREAK DOWN #
+
+  # # def year_is_included(grade, line)
+  # #   grade.any? {|g| g.values.include?(line[:timeframe])}
+  # # end
+  #
+  # def hash_to_store_subject(subject, line)
+  #   {name: line[subject], subject => Hash.new}
   # end
-
-  def hash_to_store_subject(subject, line)
-    {name: line[subject], subject => Hash.new}
-  end
-
-  def subject_is_included(result, line, subject)
-    result.any? {|e| e.values.include?(line[subject])}
-  end
-
-  def add_data_to_existing_subject(current_enrollment, line, subject)
-
-  end
+  #
+  # def subject_is_included(result, line, subject)
+  #   result.any? {|e| e.values.include?(line[subject])}
+  # end
 
 end

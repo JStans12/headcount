@@ -20,10 +20,6 @@ class EnrollmentRepository
     end
   end
 
-  # def find_file_names(file_hash)
-  #   file_hash[:enrollment].to_a
-  # end
-
   def find_file_names(file_hash)
     file_hash.reduce([]) { |r,(k,v)| v.to_a.map { |f| f.unshift(k) } }
   end
