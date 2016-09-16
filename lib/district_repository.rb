@@ -4,7 +4,7 @@ require_relative '../lib/enrollment_repository'
 
 class DistrictRepository
   include LoadData
-  attr_reader :districts, :enrollment_repository
+  attr_reader :districts, :enrollment_repository, :statewide_repository
 
   def initialize
     @districts = {}
@@ -23,13 +23,18 @@ class DistrictRepository
       compiled_names = LoadData.load_data(file_name.flatten)
       create_district_objects(compiled_names)
       load_for_enrollment(file_hash, compiled_names) if file_name.flatten[0] == :enrollment
-      #load_for_statewide(file_hash, compiled_names)
+      load_for_statewide(file_hash, compiled_names) if file_name.flatten[0] == :statewide_testing
     end
   end
 
   def load_for_enrollment(file_hash, compiled_names)
     build_enrollment_repository(file_hash.select { |k,v| k == :enrollment })
     link_enrollments_to_districts
+  end
+
+  def load_for_statewide(file_hash, compiled_names)
+    build_statwide_repository(file_hash.select { |k,v| k == :statewide_testing })
+    link_statewide_to_districts
   end
 
   def find_file_names(file_hash)
@@ -53,4 +58,14 @@ class DistrictRepository
     end
   end
 
+  def build_statwide_repository(file_hash)
+    @statewide_repository = StatewideTestRepository.new
+    @statewide_repository.load_data(file_hash)
+  end
+
+  def link_statewide_to_districts
+    @districts.each do |district_name, district_object|
+      district_object.statewide_test = @statewide_repository.statewide.find { |statewide_name, statewide_object| district_name == statewide_name }[1]
+    end
+  end
 end
