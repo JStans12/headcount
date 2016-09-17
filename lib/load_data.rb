@@ -1,12 +1,14 @@
+require_relative '../lib/truncate'
 require 'csv'
 require 'pry'
 
 module LoadData
+  include Truncate
   extend self
 
   def load_data(file_name)
     loaded_data = csv_parse(file_name[2])
-    
+
     case file_name[0]
 
     when :enrollment
@@ -52,9 +54,9 @@ module LoadData
       result << hash_to_store_data(subject, line) unless district_is_included(result, line)
       current_statewide_test = result.detect { |h| h.values.include?(line[:location]) }
       current_statewide_test[subject] = Hash.new unless current_statewide_test[subject]
-      current_statewide_test[subject][line[:timeframe]] = Hash.new unless current_statewide_test[subject][line[:timeframe]]
-      current_year = current_statewide_test[subject][line[:timeframe]]
-      current_year[line[:score]] = line[:data]
+      current_statewide_test[subject][line[:timeframe].to_i] = Hash.new unless current_statewide_test[subject][line[:timeframe].to_i]
+      current_year = current_statewide_test[subject][line[:timeframe].to_i]
+      current_year[line[:score].downcase.to_sym] = truncate(line[:data].to_f)
       result
     end
   end
@@ -66,7 +68,7 @@ module LoadData
       current_statewide_test[subject] = Hash.new unless current_statewide_test[subject]
       current_statewide_test[subject][line[:race_ethnicity]] = Hash.new unless current_statewide_test[subject][line[:race_ethnicity]]
       current_year = current_statewide_test[subject][line[:race_ethnicity]]
-      current_year[line[:timeframe]] = line[:data]
+      current_year[line[:timeframe].to_i] = truncate(line[:data].to_f)
       result
     end
   end
