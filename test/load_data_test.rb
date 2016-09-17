@@ -1,10 +1,5 @@
-require 'simplecov'
-SimpleCov.start
-require 'minitest/autorun'
-require 'minitest/pride'
-require_relative '../lib/district_repository'
-require_relative '../lib/load_data'
-require_relative '../lib/statewide_test_repository'
+require './test_helper'
+require './lib/load_data'
 
 class TestLoadData < Minitest::Test
   include LoadData

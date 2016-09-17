@@ -15,13 +15,12 @@ class StatewideTest
   end
 
   def proficient_by_data(grade)
-    binding.pry
     return @data[:third_grade] if grade == 3
     return @data[:eighth_grade] if grade == 8
   end
 
   def proficient_by_race_or_ethnicity(race)
-    return
+    @data
   end
 
 end

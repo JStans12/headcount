@@ -1,8 +1,6 @@
-require 'simplecov'
-SimpleCov.start
-require 'minitest/autorun'
-require 'minitest/pride'
-require_relative '../lib/enrollment'
+require './test_helper'
+require './lib/enrollment'
+require './lib/enrollment_repository'
 
 class TestEnrollment < Minitest::Test
   def test_enrollment_is_initialized_with_name
