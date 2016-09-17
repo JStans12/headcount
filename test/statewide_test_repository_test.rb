@@ -1,10 +1,5 @@
-require 'simplecov'
-SimpleCov.start
-require 'minitest/autorun'
-require 'minitest/pride'
-require_relative '../lib/enrollment'
-require_relative '../lib/statewide_test_repository'
-# require_relative '../test_helper'
+require './test_helper'
+require './lib/statewide_test_repository'
 
 class TestStatewideTestRepository < Minitest::Test
 

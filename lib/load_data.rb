@@ -6,7 +6,7 @@ module LoadData
 
   def load_data(file_name)
     loaded_data = csv_parse(file_name[2])
-
+    
     case file_name[0]
 
     when :enrollment
@@ -64,12 +64,13 @@ module LoadData
       result << hash_to_store_data(subject, line) unless district_is_included(result, line)
       current_statewide_test = result.detect { |h| h.values.include?(line[:location]) }
       current_statewide_test[subject] = Hash.new unless current_statewide_test[subject]
-      current_statewide_test[subject][line[:race_ethnicity]] = Hash.new unless current_statewide_test[subject][line[:timeframe]]
+      current_statewide_test[subject][line[:race_ethnicity]] = Hash.new unless current_statewide_test[subject][line[:race_ethnicity]]
       current_year = current_statewide_test[subject][line[:race_ethnicity]]
       current_year[line[:timeframe]] = line[:data]
       result
     end
   end
+
   # POSSIBLILITIES TO BREAK DOWN #
 
   # # def year_is_included(grade, line)

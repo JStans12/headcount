@@ -1,12 +1,6 @@
-require 'simplecov'
-SimpleCov.start
-require 'minitest/autorun'
-require 'minitest/pride'
-require_relative '../lib/headcount_analyst'
-require_relative '../lib/district_repository'
-# require_relative '../lib/district'
-require_relative '../lib/enrollment_repository'
-require_relative '../lib/enrollment'
+require './test_helper'
+require './lib/headcount_analyst'
+require './lib/district_repository'
 
 class TestHeadCountAnalyst < Minitest::Test
   def test_calculates_average_participation

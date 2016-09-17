@@ -1,6 +1,7 @@
 require_relative '../lib/load_data'
 require_relative '../lib/district'
 require_relative '../lib/enrollment_repository'
+require_relative '../lib/statewide_test_repository'
 
 class DistrictRepository
   include LoadData
