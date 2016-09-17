@@ -21,6 +21,13 @@ module LoadData
       return compile_ethnicity_data(loaded_data, :math)if file_name[1] == :math
       return compile_ethnicity_data(loaded_data, :reading)if file_name[1] == :reading
       return compile_ethnicity_data(loaded_data, :writing)if file_name[1] == :writing
+
+    when :economic_profile
+      return compiled_names_economic_profile(loaded_data, :median_household_income) if file_name[1] == :median_household_income
+      return compiled_names_children_in_poverty(loaded_data, :children_in_poverty) if file_name[1] == :children_in_poverty
+      #return compile_free_lunch_data(loaded_data, :free_or_reduced_price_lunch) if file_name[1] == :free_or_reduced_price_lunch
+      return compiled_names_children_in_poverty(loaded_data, :title_i) if file_name[1] == :title_i
+
     end
   end
 
@@ -73,6 +80,32 @@ module LoadData
     end
   end
 
+  def compiled_names_economic_profile(file_content, median)
+    file_content.reduce([]) do |result, line|
+      result << hash_to_store_data(median, line) unless district_is_included(result, line)
+      current_median = result.detect { |h| h.values.include?(line[:location]) }
+      current_median[median][line[:timeframe].split('-').map! { |year| year.to_i }] = line[:data].to_f
+      result
+    end
+  end
+
+  def compiled_names_children_in_poverty(file_content, median)
+    file_content.reduce([]) do |result, line|
+      result << hash_to_store_data(median, line) unless district_is_included(result, line)
+      current_median = result.detect { |h| h.values.include?(line[:location]) }
+      current_median[median][line[:timeframe].to_i] = line[:data].to_f
+      result
+    end
+  end
+
+  def compiled_title_i_data(file_content, median)
+    file_content.reduce([]) do |result, line|
+      result << hash_to_store_data(median, line) unless district_is_included(result, line)
+      current_median = result.detect { |h| h.values.include?(line[:location]) }
+      current_median[median][line[:timeframe].to_i] = line[:data].to_f
+      result
+    end
+  end
   # POSSIBLILITIES TO BREAK DOWN #
 
   # # def year_is_included(grade, line)
