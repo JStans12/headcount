@@ -63,7 +63,7 @@ class TestHeadCountAnalyst < Minitest::Test
    ha = HeadcountAnalyst.new(dr)
 
    refute ha.kindergarten_participation_correlates_with_high_school_graduation(:for => 'STATEWIDE')
- end
+  end
 
  def test_multiple_districts_participation_can_be_correlated
    dr = DistrictRepository.new
