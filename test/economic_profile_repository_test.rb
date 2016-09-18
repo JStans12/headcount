@@ -33,6 +33,8 @@ class TestEconomicProfileRepository < Minitest::Test
     }
     })
     ep = epr.find_by_name("ACADEMY 20")
+
+    assert_equal EconomicProfile, ep.class
   end
 
 end
