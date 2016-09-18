@@ -17,75 +17,88 @@ class DistrictRepository
   end
 
   def find_all_matching(name_snip)
-    @districts.select { |d| d.include?(name_snip) }
+    @districts.select { |district| district.include?(name_snip) }
   end
 
-  def load_data(file_hash)
-    find_file_names(file_hash).each do |file_name|
-      compiled_names = LoadData.load_data(file_name.flatten)
-      create_district_objects(compiled_names)
-      load_for_enrollment(file_hash, compiled_names) if file_name.flatten[0] == :enrollment
-      load_for_statewide(file_hash, compiled_names) if file_name.flatten[0] == :statewide_testing
-      load_for_economic(file_hash, compiled_names) if file_name.flatten[0] == :economic_profile
+  def load_data(files_by_type)
+    find_file_names_with_type(files_by_type).each do |file_name_with_type|
+      unique_districts = LoadData.load_data(file_name_with_type.flatten)
+      create_district_objects(unique_districts)
+      load_for_enrollment(files_by_type, unique_districts) if primary_file_type(:enrollment, file_name_with_type)
+      load_for_statewide(files_by_type, unique_districts) if primary_file_type(:statewide_testing, file_name_with_type)
+      load_for_economic(files_by_type, unique_districts) if primary_file_type(:economic_profile, file_name_with_type)
     end
   end
 
-  def load_for_enrollment(file_hash, compiled_names)
-    build_enrollment_repository(file_hash.select { |k,v| k == :enrollment })
-    link_enrollments_to_districts
+  def find_file_names_with_type(files_by_type)
+    files_by_type.reduce([]) do |result, (file_type, file_name)|
+      result << file_name.to_a.map { |file| file.unshift(file_type) }
+      result
+    end
   end
 
-  def load_for_statewide(file_hash, compiled_names)
-    build_statwide_repository(file_hash.select { |k,v| k == :statewide_testing })
-    link_statewide_to_districts
-  end
-
-  def load_for_economic(file_hash, compiled_names)
-    build_economic_repository(file_hash.select { |k,v| k == :economic_profile })
-    link_economic_to_districts
-  end
-
-  def find_file_names(file_hash)
-    file_hash.reduce([]) { |r,(k,v)| r << v.to_a.map { |f| f.unshift(k) } ;r }
-  end
-
-  def create_district_objects(compiled_names)
-    compiled_names.each do |name|
+  def create_district_objects(unique_districts)
+    unique_districts.each do |name|
       @districts[name[:name]] = District.new(name) unless @districts[name[:name]]
     end
   end
 
-  def build_enrollment_repository(file_hash)
-    @enrollment_repository = EnrollmentRepository.new
-    @enrollment_repository.load_data(file_hash)
-  end
-
-  def link_enrollments_to_districts
-    @districts.each do |district_name, district_object|
-      district_object.enrollment = @enrollment_repository.enrollments.find { |enrollment_name, enrollment_object| district_name == enrollment_name }[1]
-    end
-  end
-
-  def build_statwide_repository(file_hash)
-    @statewide_repository = StatewideTestRepository.new
-    @statewide_repository.load_data(file_hash)
+  def primary_file_type(primary_type, file_name_with_type)
+    file_name_with_type.flatten[0] == primary_type
   end
 
   def link_statewide_to_districts
     @districts.each do |district_name, district_object|
-      district_object.statewide_test = @statewide_repository.statewide.find { |statewide_name, statewide_object| district_name == statewide_name }[1]
+      district_object.statewide_test = @statewide_repository.statewide.find do |statewide_name, statewide_object|
+        district_name == statewide_name
+      end[1]
     end
   end
 
   def link_economic_to_districts
     @districts.each do |district_name, district_object|
-      district_object.economic = @economic_repository.economic_profiles.find { |economic_profile_name, economic_profile_object| district_name == economic_profile_name }[1]
+      district_object.economic = @economic_repository.economic_profiles.find do |economic_profile_name, economic_profile_object|
+        district_name == economic_profile_name
+      end[1]
     end
   end
 
-  def build_economic_repository(file_hash)
+  def link_enrollments_to_districts
+    @districts.each do |district_name, district_object|
+      district_object.enrollment = @enrollment_repository.enrollments.find do |enrollment_name, enrollment_object|
+        district_name == enrollment_name
+      end[1]
+    end
+  end
+
+  def load_for_enrollment(files_by_type, unique_districts)
+    build_enrollment_repository(files_by_type.select { |primary_file_type, file| primary_file_type == :enrollment })
+    link_enrollments_to_districts
+  end
+
+  def load_for_statewide(files_by_type, unique_districts)
+    build_statwide_repository(files_by_type.select { |primary_file_type, file| primary_file_type == :statewide_testing })
+    link_statewide_to_districts
+  end
+
+  def load_for_economic(files_by_type, unique_districts)
+    build_economic_repository(files_by_type.select { |primary_file_type, file| primary_file_type == :economic_profile })
+    link_economic_to_districts
+  end
+
+  def build_enrollment_repository(files_by_type)
+    @enrollment_repository = EnrollmentRepository.new
+    @enrollment_repository.load_data(files_by_type)
+  end
+
+  def build_statwide_repository(files_by_type)
+    @statewide_repository = StatewideTestRepository.new
+    @statewide_repository.load_data(files_by_type)
+  end
+
+  def build_economic_repository(files_by_type)
     @economic_repository = EconomicProfileRepository.new
-    @economic_repository.load_data(file_hash)
+    @economic_repository.load_data(files_by_type)
   end
 
 end

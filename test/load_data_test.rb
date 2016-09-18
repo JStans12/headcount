@@ -15,7 +15,7 @@ class TestLoadData < Minitest::Test
   end
 
   def test_array_is_loaded_with_hash_objects
-    array_of_enrollments = compile_names_enrollment(csv_parse("./test/fixtures/Kindergarteners test file.csv"), :kindergarten_participation)
+    array_of_enrollments = compile_enrollment(csv_parse("./test/fixtures/Kindergarteners test file.csv"), :kindergarten_participation)
 
     assert_equal 0.38456, array_of_enrollments[0][:kindergarten_participation][2008]
   end
