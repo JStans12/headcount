@@ -22,7 +22,7 @@ class EnrollmentRepository
   end
 
   def find_file_names(file_hash)
-    file_hash.reduce([]) { |r,(k,v)| v.to_a.map { |f| f.unshift(k) } }
+    file_hash.reduce([]) { |files,(k,v)| v.to_a.map { |f| f.unshift(k) } }
   end
 
   def assign_enrollment_objects(compiled_names)

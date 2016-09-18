@@ -2,10 +2,11 @@ require_relative '../lib/load_data'
 require_relative '../lib/district'
 require_relative '../lib/enrollment_repository'
 require_relative '../lib/statewide_test_repository'
+require_relative '../lib/economic_profile_repository'
 
 class DistrictRepository
   include LoadData
-  attr_reader :districts, :enrollment_repository, :statewide_repository
+  attr_reader :districts, :enrollment_repository, :statewide_repository, :economic_repository
 
   def initialize
     @districts = {}
@@ -25,6 +26,7 @@ class DistrictRepository
       create_district_objects(compiled_names)
       load_for_enrollment(file_hash, compiled_names) if file_name.flatten[0] == :enrollment
       load_for_statewide(file_hash, compiled_names) if file_name.flatten[0] == :statewide_testing
+      load_for_economic(file_hash, compiled_names) if file_name.flatten[0] == :economic_profile
     end
   end
 
@@ -36,6 +38,11 @@ class DistrictRepository
   def load_for_statewide(file_hash, compiled_names)
     build_statwide_repository(file_hash.select { |k,v| k == :statewide_testing })
     link_statewide_to_districts
+  end
+
+  def load_for_economic(file_hash, compiled_names)
+    build_economic_repository(file_hash.select { |k,v| k == :economic_profile })
+    link_economic_to_districts
   end
 
   def find_file_names(file_hash)
@@ -69,4 +76,16 @@ class DistrictRepository
       district_object.statewide_test = @statewide_repository.statewide.find { |statewide_name, statewide_object| district_name == statewide_name }[1]
     end
   end
+
+  def link_economic_to_districts
+    @districts.each do |district_name, district_object|
+      district_object.economic = @economic_repository.economic_profiles.find { |economic_profile_name, economic_profile_object| district_name == economic_profile_name }[1]
+    end
+  end
+
+  def build_economic_repository(file_hash)
+    @economic_repository = EconomicProfileRepository.new
+    @economic_repository.load_data(file_hash)
+  end
+
 end

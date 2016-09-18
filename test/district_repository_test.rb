@@ -80,7 +80,7 @@ class TestDistrictRepo < Minitest::Test
     assert_equal 0.88983, dr.enrollment_repository.enrollments["ACADEMY 20"].data[:high_school_graduation][2012]
   end
 
-  def test_something
+  def test_statewide_objects_are_loaded_into_district_objects
     dr = DistrictRepository.new
   dr.load_data({
     :enrollment => {
@@ -99,5 +99,21 @@ class TestDistrictRepo < Minitest::Test
   statewide_test = district.statewide_test
 
   assert_equal StatewideTest, statewide_test.class
+  end
+
+  def test_economic_profile_objects_are_loaded_into_district_ojects
+    dr = DistrictRepository.new
+    dr.load_data({
+      :economic_profile => {
+      :median_household_income => "./data/Median household income.csv",
+      :children_in_poverty => "./data/School-aged children in poverty.csv",
+      :free_or_reduced_price_lunch => "./data/Students qualifying for free or reduced price lunch.csv",
+      :title_i => "./data/Title I students.csv"
+    }
+    })
+    drn = dr.find_by_name("ACADEMY 20")
+    economic_profile = drn.economic
+
+    assert_equal EconomicProfile, economic_profile.class
   end
 end
