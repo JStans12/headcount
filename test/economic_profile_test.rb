@@ -90,5 +90,5 @@ class TestEconomicProfile < Minitest::Test
               :title_i => {2015 => 0.543},
               :name => "ACADEMY 20"
              }
-   end
+  end
 end
