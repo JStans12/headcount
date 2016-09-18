@@ -17,7 +17,6 @@ class EconomicProfileRepository
       compiled_names = LoadData.load_data(file_name)
       assign_economic_profile_objects(compiled_names)
     end
-    binding.pry
   end
 
   def find_file_names(file_hash)
