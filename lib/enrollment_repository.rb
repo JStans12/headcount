@@ -1,4 +1,5 @@
 require_relative '../lib/enrollment'
+require_relative '../lib/load_data'
 require 'pry'
 
 class EnrollmentRepository
@@ -21,12 +22,12 @@ class EnrollmentRepository
   end
 
   def find_file_names(file_hash)
-    file_hash[:enrollment].to_a
+    file_hash.reduce([]) { |r,(k,v)| v.to_a.map { |f| f.unshift(k) } }
   end
 
   def assign_enrollment_objects(compiled_names)
     compiled_names.each do |current_enrollment|
-      add_to_enrollments(compiled_names) if @enrollments[current_enrollment[:name]]
+      add_to_enrollments(current_enrollment) if @enrollments[current_enrollment[:name]]
       create_enrollment_object(current_enrollment) unless @enrollments[current_enrollment[:name]]
     end
   end
@@ -35,11 +36,9 @@ class EnrollmentRepository
     @enrollments[current_enrollment[:name]] = Enrollment.new(current_enrollment)
   end
 
-  def add_to_enrollments(compiled_names)
-    compiled_names.each do |current_enrollment|
+  def add_to_enrollments(current_enrollment)
       existing_enrollment = @enrollments.find { |enrollment| enrollment[1].name == current_enrollment[:name] }
       current_enrollment.each { |enrollment_key, enrollment_data| existing_enrollment[1].data[enrollment_key] = enrollment_data unless enrollment_key == :name }
-    end
   end
 
 end
