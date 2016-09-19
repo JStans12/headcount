@@ -68,10 +68,10 @@ class TestStatewideTest < Minitest::Test
 
     single = str.find_by_name("ACADEMY 20")
     expected_pi = {:math=>0.568, :reading=>0.745, :writing=>0.725}
-    expected_tow = {:math=>0.677, :reading=>0.841, :writing=>0.727}
+    expected_tow = {:math=>0.706, :reading=>0.851, :writing=>0.74}
 
     assert_equal expected_pi, single.proficient_by_race_or_ethnicity(:pacific_islander)[2011]
-    assert_equal expected_tow, single.proficient_by_race_or_ethnicity(:two_or_more)[2011]
+    assert_equal expected_tow, single.proficient_by_race_or_ethnicity(:white)[2011]
   end
 
   def test_we_can_find_proficiency_by_subject_grade_and_year
