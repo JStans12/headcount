@@ -11,7 +11,7 @@ class TestEconomicProfile < Minitest::Test
 
   def test_economic_data_loads_properly
     e = EconomicProfile.new(economic_data)
-    expected = {"ACADEMY 20"=>{:median_household_income=>{[2009, 2015]=>50000, [2013, 2014]=>60000}, :children_in_poverty=>{2012 => 0.1845, 2013 => 0.845, 2014 => 0.145}, :free_or_reduced_price_lunch=>{2014=>{:percentage=>0.023, :total=>100}}, :title_i=>{2015=>0.543}}}
+    expected = {"ACADEMY 20"=>{:median_household_income=>{[2009, 2015]=>50000, [2013, 2014]=>60000}, :children_in_poverty=>{2012 => 0.184, 2013 => 0.845, 2014 => 0.145}, :free_or_reduced_price_lunch=>{2014=>{:percentage=>0.023, :total=>100}}, :title_i=>{2015=>0.543}}}
 
     assert_equal expected, e.data
   end
@@ -37,7 +37,7 @@ class TestEconomicProfile < Minitest::Test
   def test_can_find_children_in_poverty_in_a_given_year
     e = EconomicProfile.new(economic_data)
 
-    assert_equal 0.1845, e.children_in_poverty_in_year(2012)
+    assert_equal 0.184, e.children_in_poverty_in_year(2012)
   end
 
   def test_returns_unknown_data_error_if_children_in_poverty_year_does_not_exist
@@ -85,7 +85,7 @@ class TestEconomicProfile < Minitest::Test
 
   def economic_data
   {:median_household_income => {[2009, 2015] => 50000, [2013, 2014] => 60000},
-              :children_in_poverty => {2012 => 0.1845, 2013 => 0.845, 2014 => 0.145},
+              :children_in_poverty => {2012 => 0.184, 2013 => 0.845, 2014 => 0.145},
               :free_or_reduced_price_lunch => {2014 => {:percentage => 0.023, :total => 100}},
               :title_i => {2015 => 0.543},
               :name => "ACADEMY 20"

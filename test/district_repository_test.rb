@@ -50,7 +50,7 @@ class TestDistrictRepo < Minitest::Test
     dr.load_data({:enrollment => {:kindergarten => "./test/fixtures/Kindergarteners test file2.csv"}})
 
     district = dr.find_by_name("ACADEMY 20")
-    assert_equal (0.43628), district.enrollment.kindergarten_participation_in_year(2010)
+    assert_equal 0.43628, district.enrollment.kindergarten_participation_in_year(2010)
   end
 
   def test_load_on_district_populates_er_with_enrollments_graduation
