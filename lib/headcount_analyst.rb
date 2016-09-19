@@ -6,6 +6,11 @@ class HeadcountAnalyst
     @dr = dr
   end
 
+  def find_grade(districts)
+    return :third_grade if (districts[:grade] == 3)
+    return :eighth_grade if (districts[:grade] == 8)
+  end
+
   def kindergarten_participation_rate_variation(dname, against)
     find_average_participation(@dr.find_by_name(dname), :kindergarten_participation) / find_average_participation(@dr.find_by_name(against[:against]), :kindergarten_participation)
   end
@@ -69,4 +74,58 @@ class HeadcountAnalyst
     return false
   end
 
+  def top_statewide_test_year_over_year_growth(districts)
+    grade = find_grade(districts)
+    all_districts_growth = find_growth_all_districts(districts, grade) if districts[:subject]
+    all_districts_growth = find_growth_all_districts_all_subjects(districts, grade) unless districts[:subject]
+    all_districts_growth = find_weighted_growth_all_districts_all_subjects(districts, grade) if districts[:weighting]
+    return all_districts_growth.max_by { |district_growth| district_growth[1] } unless districts[:top]
+    return all_districts_growth.sort_by { |district_growth| district_growth[1] }.last(districts[:top]).reverse
+  end
+
+  def find_growth_all_districts(districts, grade)
+    @dr.statewide_repository.statewide.reduce([]) do |result, (district, statewide)|
+      # range = statewide.data[grade].minmax_by { |year| year }.flatten
+      range = find_min_max(districts, grade)
+      growth = (range[3][districts[:subject]] - range[1][districts[:subject]]) / (range[2] - range[0])
+      result << [district, growth]
+      result
+    end
+  end
+
+  def find_growth_all_districts_all_subjects(districts, grade)
+    @dr.statewide_repository.statewide.reduce([]) do |result, (district, statewide)|
+      # range = statewide.data[grade].minmax_by { |year| year }.flatten
+      range = find_min_max(districts, grade)
+      growth = (range[3].values.reduce(:+)/3 - range[1].values.reduce(:+)/3) / (range[2] - range[0])
+      result << [district, growth]
+      result
+    end
+  end
+
+  def find_weighted_growth_all_districts_all_subjects(districts, grade)
+    @dr.statewide_repository.statewide.reduce([]) do |result, (district, statewide)|
+      # range = statewide.data[grade].minmax_by { |year| year }.flatten
+      # binding.pry
+      range = find_min_max(districts, grade)
+      weighted_math = range[3][:math] * districts[:weighting][:math] / range[1][:math] * districts[:weighting][:math]
+      weighted_writing = range[3][:writing] * districts[:weighting][:writing] / range[1][:writing] * districts[:weighting][:writing]
+      weighted_reading = range[3][:reading] * districts[:weighting][:reading] / range[1][:reading] * districts[:weighting][:reading]
+      growth = ((weighted_math + weighted_reading + weighted_writing) / 3) / (range[2] - range[0])
+      result << [district, growth]
+      result
+    end
+  end
+
+  def find_min_max(districts, grade)
+    find_max(districts, grade)
+  end
+
+  def find_min
+
+  end
+
+  def find_max(districts, grade)
+    binding.pry
+  end
 end

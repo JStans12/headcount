@@ -71,6 +71,57 @@ class TestHeadCountAnalyst < Minitest::Test
                                  :high_school_graduation => "./test/fixtures/Highschool grad test file2.csv"}})
    ha = HeadcountAnalyst.new(dr)
    districts = ["ACADEMY 20", 'ADAMS COUNTY 14', 'ADAMS-ARAPAHOE 28J']
+
    refute ha.kindergarten_participation_correlates_with_high_school_graduation(:across => districts)
  end
+
+ def test_we_can_find_the_top_district_for_year_over_year_growth
+   dr = DistrictRepository.new
+   dr.load_data({:statewide_testing => {:third_grade => "./test/fixtures/third grade students score fix.csv",
+                                        :eighth_grade => "./test/fixtures/8th grade students scoring fix.csv"}})
+
+   ha = HeadcountAnalyst.new(dr)
+   expected = ["COLORADO", 0.0030000000000000027]
+
+   assert_equal expected, ha.top_statewide_test_year_over_year_growth(grade: 3, subject: :math)
+ end
+
+ def test_can_find_multiple_top_districts
+   skip
+   dr = DistrictRepository.new
+   dr.load_data({:statewide_testing => {:third_grade => "./test/fixtures/third grade students score fix.csv",
+                                        :eighth_grade => "./test/fixtures/8th grade students scoring fix.csv"}})
+
+   ha = HeadcountAnalyst.new(dr)
+   expected3 = [["COLORADO", 0.0030000000000000027], ["ACADEMY 20", -0.0038333333333333366], ["ADAMS COUNTY 14", -0.008000000000000007]]
+   expected2 = [["COLORADO", 0.0030000000000000027], ["ACADEMY 20", -0.0038333333333333366]]
+
+   assert_equal expected3, ha.top_statewide_test_year_over_year_growth(grade: 3, top: 3, subject: :math)
+   assert_equal expected2, ha.top_statewide_test_year_over_year_growth(grade: 3, top: 2, subject: :math)
+ end
+
+ def test_can_find_average_growth_across_all_subjects
+   skip
+   dr = DistrictRepository.new
+   dr.load_data({:statewide_testing => {:third_grade => "./test/fixtures/third grade students score fix.csv",
+                                        :eighth_grade => "./test/fixtures/8th grade students scoring fix.csv"}})
+
+   ha = HeadcountAnalyst.new(dr)
+   expected = ["COLORADO", 0.0021666666666666687]
+
+   assert_equal expected, ha.top_statewide_test_year_over_year_growth(grade: 3)
+ end
+
+ def test_we_can_find_weighted_district_growths
+   skip
+   dr = DistrictRepository.new
+   dr.load_data({:statewide_testing => {:third_grade => "./test/fixtures/third grade students score fix.csv",
+                                        :eighth_grade => "./test/fixtures/8th grade students scoring fix.csv"}})
+
+   ha = HeadcountAnalyst.new(dr)
+   expected = ["ADAMS COUNTY 14", 0.03241274244795372]
+
+   assert_equal expected, ha.top_statewide_test_year_over_year_growth(grade: 8, :weighting => {:math => 0.5, :reading => 0.5, :writing => 0.0})
+ end
+
 end

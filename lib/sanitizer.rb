@@ -43,4 +43,8 @@ module Sanitizer
     return :two_or_more       if ethnicity == "Two or more"
     return :white             if ethnicity == "White"
   end
+
+  def clean_empty_values(all_districts)
+    
+  end
 end
