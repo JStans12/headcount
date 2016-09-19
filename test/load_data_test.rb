@@ -27,6 +27,6 @@ class TestLoadData < Minitest::Test
   end
 
   def test_load_data_can_load_an_ethnicity_file
-    loaded_data = LoadData.load_data([:statewide_testing, :math, "./test/fixtures/average proficiency math.csv"]git )
+    loaded_data = LoadData.load_data([:statewide_testing, :math, "./test/fixtures/average proficiency math.csv"] )
   end
 end

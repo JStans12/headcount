@@ -22,6 +22,9 @@ class TestEconomicProfileRepository < Minitest::Test
    assert_equal "ACADEMY 20", ep.find_by_name("ACADEMY 20").name
   end
 
+  def test_this_method_exists
+  end
+
   def test_load_data_creates_economic_profile_objects
     epr = EconomicProfileRepository.new
     epr.load_data({
