@@ -17,7 +17,7 @@ class TestHeadCountAnalyst < Minitest::Test
     dr.load_data({:enrollment => {:kindergarten => "./test/fixtures/Kindergarteners test file2.csv"}})
     ha = HeadcountAnalyst.new(dr)
 
-    assert_equal 0.7663193545788461, ha.kindergarten_participation_rate_variation('ACADEMY 20', :against => 'Colorado')
+    assert_equal 0.7663193545788461, ha.kindergarten_participation_rate_variation('ACADEMY 20', :against => 'COLORADO')
   end
 
   def test_can_compare_participation_with_district_participation
@@ -33,7 +33,7 @@ class TestHeadCountAnalyst < Minitest::Test
     dr.load_data({:enrollment => {:kindergarten => "./test/fixtures/Kindergarteners test file2.csv"}})
     ha = HeadcountAnalyst.new(dr)
 
-    assert_equal 1.2576413758640794, ha.kindergarten_participation_rate_variation_trend('ACADEMY 20', :against => 'Colorado')[2004]
+    assert_equal 1.2576413758640794, ha.kindergarten_participation_rate_variation_trend('ACADEMY 20', :against => 'COLORADO')[2004]
   end
 
   def test_can_compare_kindergarten_participation_against_highschool_graduation_by_district

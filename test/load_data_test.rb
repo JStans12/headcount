@@ -11,11 +11,11 @@ class TestLoadData < Minitest::Test
 
   def test_csv_file_loaded_into_program_mapped_to_array
 
-    assert_equal Array, csv_parse("./test/fixtures/Kindergarteners test file.csv").class
+    assert_equal Array, csv_parse(["type", "sub-type", "./test/fixtures/Kindergarteners test file.csv"]).class
   end
 
   def test_array_is_loaded_with_hash_objects
-    array_of_enrollments = compile_enrollment(csv_parse("./test/fixtures/Kindergarteners test file.csv"), :kindergarten_participation)
+    array_of_enrollments = compile_enrollment(csv_parse(["type", "sub-type", "./test/fixtures/Kindergarteners test file.csv"]), :kindergarten_participation)
 
     assert_equal 0.38456, array_of_enrollments[0][:kindergarten_participation][2008]
   end

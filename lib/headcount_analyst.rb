@@ -34,8 +34,8 @@ class HeadcountAnalyst
     kindergarten_key = :kindergarten_participation
     highschool_key = :high_school_graduation
 
-    kindergarten_variation = find_average_participation(@dr.find_by_name(district), kindergarten_key) / find_average_participation(@dr.find_by_name("Colorado"), kindergarten_key)
-    highschool_variation = find_average_participation(@dr.find_by_name(district), highschool_key) / find_average_participation(@dr.find_by_name("Colorado"), highschool_key)
+    kindergarten_variation = find_average_participation(@dr.find_by_name(district), kindergarten_key) / find_average_participation(@dr.find_by_name("COLORADO"), kindergarten_key)
+    highschool_variation = find_average_participation(@dr.find_by_name(district), highschool_key) / find_average_participation(@dr.find_by_name("COLORADO"), highschool_key)
     kindergarten_variation / highschool_variation
   end
 
