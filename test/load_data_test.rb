@@ -27,6 +27,20 @@ class TestLoadData < Minitest::Test
   end
 
   def test_load_data_can_load_an_ethnicity_file
-    loaded_data = LoadData.load_data([:statewide_testing, :math, "./test/fixtures/average proficiency math.csv"] )
+    loaded_data = LoadData.load_data([:statewide_testing, :math, "./test/fixtures/average proficiency math.csv"])
+
+    assert_equal 4, loaded_data.length
+  end
+
+  def test_load_data_can_load_economic_profile
+    loaded_data = LoadData.load_data([:economic_profile, :median_household_income, "./test/fixtures/median_household_income.csv"])
+
+    assert_equal 4, loaded_data.length
+  end
+
+  def test_load_data_can_load_free_lunch_data
+    loaded_data = LoadData.load_data([:economic_profile, :free_or_reduced_price_lunch, "./test/fixtures/free_or_reduced_price_lunch.csv"])
+
+    assert_equal 4, loaded_data.length
   end
 end
