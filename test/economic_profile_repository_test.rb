@@ -22,22 +22,58 @@ class TestEconomicProfileRepository < Minitest::Test
    assert_equal "ACADEMY 20", ep.find_by_name("ACADEMY 20").name
   end
 
-  def test_this_method_exists
-  end
-
   def test_load_data_creates_economic_profile_objects
     epr = EconomicProfileRepository.new
-    epr.load_data({
+    files_by_type = {
       :economic_profile => {
       :median_household_income => "./data/Median household income.csv",
       :children_in_poverty => "./data/School-aged children in poverty.csv",
       :free_or_reduced_price_lunch => "./data/Students qualifying for free or reduced price lunch.csv",
       :title_i => "./data/Title I students.csv"
     }
-    })
+    }
+
+    assert epr.economic_profiles.empty?
+
+    epr.load_data(files_by_type)
     ep = epr.find_by_name("ACADEMY 20")
 
+    refute epr.economic_profiles.empty?
     assert_equal EconomicProfile, ep.class
   end
+
+  def test_load_data_creates_economic_profile_objects
+    epr = EconomicProfileRepository.new
+    files_by_type = {
+      :economic_profile => {
+      :median_household_income => "./data/Median household income.csv",
+      :children_in_poverty => "./data/School-aged children in poverty.csv",
+      :free_or_reduced_price_lunch => "./data/Students qualifying for free or reduced price lunch.csv",
+      :title_i => "./data/Title I students.csv"
+    }
+    }
+
+    assert epr.economic_profiles.empty?
+
+    epr.load_data(files_by_type)
+    ep = epr.find_by_name("ACADEMY 20")
+
+    refute epr.economic_profiles.empty?
+    assert_equal EconomicProfile, ep.class
+  end
+
+
+  def test_find_file_names_creates_arrays_of_file_names
+    epr = EconomicProfileRepository.new
+    files_by_type = {
+      :economic_profile => {
+      :median_household_income => "./data/Median household income.csv",
+      :children_in_poverty => "./data/School-aged children in poverty.csv"
+    }
+    }
+
+    assert_equal [:economic_profile, :median_household_income, "./data/Median household income.csv"], epr.find_file_names(files_by_type)[0]
+  end
+
 
 end
