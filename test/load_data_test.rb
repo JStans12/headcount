@@ -21,9 +21,12 @@ class TestLoadData < Minitest::Test
   end
 
   def test_load_data_can_load_a_third_grade_file
-
     loaded_data = LoadData.load_data([:statewide_testing, :third_grade, './test/fixtures/third grade students score fix.csv'])
 
     assert_equal 3, loaded_data.length
+  end
+
+  def test_load_data_can_load_an_ethnicity_file
+    loaded_data = LoadData.load_data([:statewide_testing, :math, "./test/fixtures/average proficiency math.csv"]git )
   end
 end
