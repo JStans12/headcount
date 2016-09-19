@@ -33,7 +33,7 @@ class StatewideTest
   end
 
   def find_subject_by_ethnicity(race, subject)
-    @data[subject][sanitize_race(race)].reduce({}) do |result, (year, data)|
+    @data[subject][race].reduce({}) do |result, (year, data)|
       result[year] = {subject => data}
       result
     end
@@ -51,17 +51,6 @@ class StatewideTest
     ethnicity_data = proficient_by_race_or_ethnicity(race)
     return ethnicity_data[year][subject] unless ethnicity_data[year][subject] == 0.0
     return "N/A"
-  end
-
-  def sanitize_race(race)
-    return "Asian"                      if race == :asian
-    return "All Students"               if race == :all_students
-    return "Black"                      if race == :black
-    return "Hawaiian/Pacific Islander"  if race == :pacific_islander
-    return "Hispanic"                   if race == :hispanic
-    return "Native American"            if race == :native_american
-    return "Two or more"                if race == :two_or_more
-    return "White"                      if race == :white
   end
 
   def allowed_subjects

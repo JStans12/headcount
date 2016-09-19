@@ -41,7 +41,7 @@ class TestLoadData < Minitest::Test
   def test_array_is_loaded_with_hash_objects_statewide_ethnicity
     array_of_statewide = compile_statewide_subject(csv_parse([:statewide_testing, :math, "./test/fixtures/average proficiency math.csv"]), :math)
 
-    assert_equal 0.709, array_of_statewide[0][:math]["Asian"][2011]
+    assert_equal 0.709, array_of_statewide[0][:math][:asian][2011]
   end
 
   def test_load_data_can_load_economic_profile

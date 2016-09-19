@@ -10,6 +10,7 @@ module Sanitizer
     line[:data] = clean_data(line[:data], file_name, line) if line[:data]
     line[:score] = clean_score(line[:score]) if line[:score]
     line[:location] = clean_location(line[:location])
+    line[:race_ethnicity] = clean_ethnicity(line[:race_ethnicity]) if line[:race_ethnicity]
     line
   end
 
@@ -30,5 +31,16 @@ module Sanitizer
 
   def clean_location(location)
     location.upcase
+  end
+
+  def clean_ethnicity(ethnicity)
+    return :asian             if ethnicity == "Asian"
+    return :all_students      if ethnicity == "All Students"
+    return :black             if ethnicity == "Black"
+    return :pacific_islander  if ethnicity == "Hawaiian/Pacific Islander"
+    return :hispanic          if ethnicity == "Hispanic"
+    return :native_american   if ethnicity == "Native American"
+    return :two_or_more       if ethnicity == "Two or more"
+    return :white             if ethnicity == "White"
   end
 end
