@@ -4,7 +4,6 @@ require './lib/economic_profile_repository'
 class TestEconomicProfileRepository < Minitest::Test
 
   def test_inits_with_empty_economic_profiles_hash
-
     er = EconomicProfileRepository.new
     assert_equal ({}), er.economic_profiles
   end
@@ -22,7 +21,7 @@ class TestEconomicProfileRepository < Minitest::Test
    assert_equal "ACADEMY 20", ep.find_by_name("ACADEMY 20").name
   end
 
-  def test_load_data_creates_economic_profile_objects
+  def test_load_data_loads_economic_profile_repository
     epr = EconomicProfileRepository.new
     files_by_type = {
       :economic_profile => {
@@ -36,10 +35,8 @@ class TestEconomicProfileRepository < Minitest::Test
     assert epr.economic_profiles.empty?
 
     epr.load_data(files_by_type)
-    ep = epr.find_by_name("ACADEMY 20")
 
     refute epr.economic_profiles.empty?
-    assert_equal EconomicProfile, ep.class
   end
 
   def test_load_data_creates_economic_profile_objects
@@ -53,15 +50,11 @@ class TestEconomicProfileRepository < Minitest::Test
     }
     }
 
-    assert epr.economic_profiles.empty?
-
     epr.load_data(files_by_type)
     ep = epr.find_by_name("ACADEMY 20")
 
-    refute epr.economic_profiles.empty?
     assert_equal EconomicProfile, ep.class
   end
-
 
   def test_find_file_names_creates_arrays_of_file_names
     epr = EconomicProfileRepository.new
