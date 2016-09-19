@@ -9,9 +9,9 @@ class TestLoadData < Minitest::Test
       assert_equal 181, load_data([:enrollment, :kindergarten, "./data/Kindergartners in full-day program.csv"]).length
   end
 
-  def test_csv_file_loaded_into_program
+  def test_csv_file_loaded_into_program_mapped_to_array
 
-    assert_equal CSV, csv_parse("./test/fixtures/Kindergarteners test file.csv").class
+    assert_equal Array, csv_parse("./test/fixtures/Kindergarteners test file.csv").class
   end
 
   def test_array_is_loaded_with_hash_objects
