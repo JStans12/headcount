@@ -65,12 +65,44 @@ class TestHeadCountAnalyst < Minitest::Test
    refute ha.kindergarten_participation_correlates_with_high_school_graduation(:for => 'STATEWIDE')
   end
 
- def test_multiple_districts_participation_can_be_correlated
-   dr = DistrictRepository.new
-   dr.load_data({:enrollment => {:kindergarten => "./test/fixtures/Kindergarteners test file2.csv",
-                                 :high_school_graduation => "./test/fixtures/Highschool grad test file2.csv"}})
-   ha = HeadcountAnalyst.new(dr)
-   districts = ["ACADEMY 20", 'ADAMS COUNTY 14', 'ADAMS-ARAPAHOE 28J']
-   refute ha.kindergarten_participation_correlates_with_high_school_graduation(:across => districts)
- end
+  def test_multiple_districts_participation_can_be_correlated
+    dr = DistrictRepository.new
+    dr.load_data({:enrollment => {:kindergarten => "./test/fixtures/Kindergarteners test file2.csv",
+                                  :high_school_graduation => "./test/fixtures/Highschool grad test file2.csv"}})
+    ha = HeadcountAnalyst.new(dr)
+    districts = ["ACADEMY 20", 'ADAMS COUNTY 14', 'ADAMS-ARAPAHOE 28J']
+    refute ha.kindergarten_participation_correlates_with_high_school_graduation(:across => districts)
+  end
+
+  def test_top_statewide_test_year_raises_insufficient_information_error
+    dr = DistrictRepository.new
+    dr.load_data({
+      :statewide_testing => {
+        :third_grade => "./data/3rd grade students scoring proficient or above on the CSAP_TCAP.csv",
+        :eighth_grade => "./data/8th grade students scoring proficient or above on the CSAP_TCAP.csv" }})
+
+    ha = HeadcountAnalyst.new(dr)
+    assert_raises(InsufficientInformationError) do
+       ha.top_statewide_test_year_over_year_growth(subject: :math)
+    end
+  end
+
+  def test_top_statewide_test_year_finds_top
+    dr = DistrictRepository.new
+    dr.load_data({
+      :statewide_testing => {
+        :third_grade => "./data/3rd grade students scoring proficient or above on the CSAP_TCAP.csv",
+        :eighth_grade => "./data/8th grade students scoring proficient or above on the CSAP_TCAP.csv" }})
+
+    ha = HeadcountAnalyst.new(dr)
+
+    assert_equal "WILEY RE-13 JT", ha.top_statewide_test_year_over_year_growth(grade: 3, subject: :math).first
+    assert_in_delta 0.3, ha.top_statewide_test_year_over_year_growth(grade: 3, subject: :math).last, 0.005
+
+    assert_equal "COTOPAXI RE-3", ha.top_statewide_test_year_over_year_growth(grade: 8, subject: :reading).first
+    assert_in_delta 0.13, ha.top_statewide_test_year_over_year_growth(grade: 8, subject: :reading).last, 0.005
+
+    assert_equal "BETHUNE R-5", ha.top_statewide_test_year_over_year_growth(grade: 3, subject: :writing).first
+    assert_in_delta 0.148, ha.top_statewide_test_year_over_year_growth(grade: 3, subject: :writing).last, 0.005
+  end
 end

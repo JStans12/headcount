@@ -1,3 +1,4 @@
+require_relative '../lib/insufficient_information_error'
 require 'pry'
 
 class HeadcountAnalyst
@@ -69,4 +70,44 @@ class HeadcountAnalyst
     return false
   end
 
+  def top_statewide_test_year_over_year_growth(testing_info)
+    raise InsufficientInformationError.new("Invalide Grade") if invalide_grade?(testing_info[:grade])
+    testing_info[:grade] = find_grade(testing_info)
+    all_districts_growth = find_min_and_max(testing_info)
+    all_districts_growth.max_by { |dg| dg[1] }
+  end
+
+  def invalide_grade?(grade)
+    grade != 3 && grade != 8
+  end
+
+  def find_grade(testing_info)
+    return :third_grade if (testing_info[:grade] == 3)
+    return :eighth_grade if (testing_info[:grade] == 8)
+  end
+
+  def find_min_and_max(testing_info)
+    @dr.statewide_repository.statewide.reduce([]) do |result, (district, statewide)|
+      max = find_max(statewide, testing_info[:grade], testing_info[:subject])
+      min = find_min(statewide, testing_info[:grade], testing_info[:subject])
+      result << [district, ((max[1] - min[1]) / (max[0] - min[0]))] unless ((max[1] - min[1]) / (max[0] - min[0])).to_f.nan?
+      result
+    end
+  end
+
+  def find_max(statewide, grade, subject)
+    removed_zeros = statewide.data[grade].dup
+    removed_zeros.delete_if { |year, subjects| subjects[subject] == 0 || subjects[subject].nil? }
+    max = removed_zeros.max_by { |year, subjects| year }
+    return [max[0], max[1][subject]] unless max.nil?
+    [1,0]
+  end
+
+  def find_min(statewide, grade, subject)
+    removed_zeros = statewide.data[grade].dup
+    removed_zeros.delete_if { |year, subjects| subjects[subject] == 0 || subjects[subject].nil? }
+    min = removed_zeros.min_by { |year, subjects| year }
+    return [min[0], min[1][subject]] unless min.nil?
+    [0,0]
+  end
 end
