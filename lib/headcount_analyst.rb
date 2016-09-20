@@ -73,8 +73,24 @@ class HeadcountAnalyst
   def top_statewide_test_year_over_year_growth(testing_info)
     raise InsufficientInformationError.new("Invalide Grade") if invalide_grade?(testing_info[:grade])
     testing_info[:grade] = find_grade(testing_info)
-    all_districts_growth = find_min_and_max(testing_info)
-    all_districts_growth.max_by { |dg| dg[1] }
+
+    if testing_info[:subject]
+      all_districts_growth = find_min_and_max(testing_info)
+      return all_districts_growth.max_by { |dg| dg[1] } unless testing_info[:top]
+      return all_districts_growth.sort_by { |dg| dg[1] }.last(testing_info[:top]).reverse if testing_info[:top]
+    end
+
+    unless testing_info[:subject]
+      testing_info[:subject] = :math
+      math_districts_growth = find_min_and_max(testing_info)
+      testing_info[:subject] = :reading
+      reading_districts_growth = find_min_and_max(testing_info)
+      testing_info[:subject] = :writing
+      writing_districts_growth = find_min_and_max(testing_info)
+      all_districts_growth = average_districts_growth_across_subjects(math_districts_growth, reading_districts_growth, writing_districts_growth, testing_info)
+      return all_districts_growth.max_by { |dg| dg[1] } unless testing_info[:top]
+      return all_districts_growth.sort_by { |dg| dg[1] }.last(testing_info[:top]).reverse if testing_info[:top]
+    end
   end
 
   def invalide_grade?(grade)
@@ -88,9 +104,26 @@ class HeadcountAnalyst
 
   def find_min_and_max(testing_info)
     @dr.statewide_repository.statewide.reduce([]) do |result, (district, statewide)|
-      max = find_max(statewide, testing_info[:grade], testing_info[:subject])
-      min = find_min(statewide, testing_info[:grade], testing_info[:subject])
-      result << [district, ((max[1] - min[1]) / (max[0] - min[0]))] unless ((max[1] - min[1]) / (max[0] - min[0])).to_f.nan?
+
+      unless testing_info[:weighting]
+        max = find_max(statewide, testing_info[:grade], testing_info[:subject])
+        min = find_min(statewide, testing_info[:grade], testing_info[:subject])
+      end
+
+      if testing_info[:weighting]
+        max = find_max_with_weight(statewide, testing_info[:grade], testing_info[:subject], testing_info[:weighting])
+        min = find_min_with_weight(statewide, testing_info[:grade], testing_info[:subject], testing_info[:weighting])
+      end
+
+
+      if max[0] == min[0] || ((max[1] - min[1]) / (max[0] - min[0])).to_f.nan?
+        result << [district, 0]
+      end
+
+      unless max[0] == min[0] || ((max[1] - min[1]) / (max[0] - min[0])).to_f.nan?
+        result << [district, ((max[1] - min[1]) / (max[0] - min[0]))]
+      end
+
       result
     end
   end
@@ -109,5 +142,55 @@ class HeadcountAnalyst
     min = removed_zeros.min_by { |year, subjects| year }
     return [min[0], min[1][subject]] unless min.nil?
     [0,0]
+  end
+
+  def find_max_with_weight(statewide, grade, subject, weighting)
+    removed_zeros = statewide.data[grade].dup
+    removed_zeros.delete_if { |year, subjects| subjects[subject] == 0 || subjects[subject].nil? }
+    max = removed_zeros.max_by { |year, subjects| year }
+    return [max[0], (max[1][subject] * weighting[subject])] unless max.nil?
+    [1,0]
+  end
+
+  def find_min_with_weight(statewide, grade, subject, weighting)
+    removed_zeros = statewide.data[grade].dup
+    removed_zeros.delete_if { |year, subjects| subjects[subject] == 0 || subjects[subject].nil? }
+    min = removed_zeros.min_by { |year, subjects| year }
+    return [min[0], (min[1][subject] * weighting[subject])] unless min.nil?
+    [0,0]
+  end
+
+  def average_districts_growth_across_subjects(math, reading, writing, testing_info)
+    consolidated = consolidate_growth_to_district(math, reading, writing)
+    return find_average(consolidated) unless testing_info[:weighting]
+    return find_average_weighted(consolidated) if testing_info[:weighting]
+  end
+
+  def consolidate_growth_to_district(math, reading, writing)
+    mashed = []
+
+    math.each { |a| mashed << a }
+
+    reading.each { |a| mashed << a }
+
+    writing.each { |a| mashed << a }
+
+    consolidated = mashed.group_by { |a| a[0] }
+  end
+
+  def find_average(consolidated)
+    consolidated.reduce([]) do |result, (district, data)|
+      average = (data[0][1] + data[1][1] + data[2][1]) / 3
+      result << [district, average]
+      result
+    end
+  end
+
+  def find_average_weighted(consolidated)
+    consolidated.reduce([]) do |result, (district, data)|
+      average = (data[0][1] + data[1][1] + data[2][1])
+      result << [district, average]
+      result
+    end
   end
 end

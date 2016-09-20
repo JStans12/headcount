@@ -105,4 +105,47 @@ class TestHeadCountAnalyst < Minitest::Test
     assert_equal "BETHUNE R-5", ha.top_statewide_test_year_over_year_growth(grade: 3, subject: :writing).first
     assert_in_delta 0.148, ha.top_statewide_test_year_over_year_growth(grade: 3, subject: :writing).last, 0.005
   end
+
+  def test_top_statewide_test_year_finds_top_number
+    dr = DistrictRepository.new
+    dr.load_data({
+      :statewide_testing => {
+        :third_grade => "./data/3rd grade students scoring proficient or above on the CSAP_TCAP.csv",
+        :eighth_grade => "./data/8th grade students scoring proficient or above on the CSAP_TCAP.csv" }})
+
+    ha = HeadcountAnalyst.new(dr)
+    expected = [["WILEY RE-13 JT", 0.30000000000000004], ["SANGRE DE CRISTO RE-22J", 0.07133333333333335], ["COTOPAXI RE-3", 0.07000000000000002]]
+
+    assert_equal expected, ha.top_statewide_test_year_over_year_growth(grade: 3, top: 3, subject: :math)
+  end
+
+  def test_finding_top_overall_districts
+    dr = DistrictRepository.new
+    dr.load_data({
+      :statewide_testing => {
+        :third_grade => "./data/3rd grade students scoring proficient or above on the CSAP_TCAP.csv",
+        :eighth_grade => "./data/8th grade students scoring proficient or above on the CSAP_TCAP.csv" }})
+
+    ha = HeadcountAnalyst.new(dr)
+
+    assert_equal "SANGRE DE CRISTO RE-22J", ha.top_statewide_test_year_over_year_growth(grade: 3).first
+    assert_in_delta 0.071, ha.top_statewide_test_year_over_year_growth(grade: 3).last, 0.005
+
+    assert_equal "OURAY R-1", ha.top_statewide_test_year_over_year_growth(grade: 8).first
+    assert_in_delta 0.11, ha.top_statewide_test_year_over_year_growth(grade: 8).last, 0.005
+  end
+
+  def test_weighting_results_by_subject
+    dr = DistrictRepository.new
+    dr.load_data({
+      :statewide_testing => {
+        :third_grade => "./data/3rd grade students scoring proficient or above on the CSAP_TCAP.csv",
+        :eighth_grade => "./data/8th grade students scoring proficient or above on the CSAP_TCAP.csv" }})
+
+    ha = HeadcountAnalyst.new(dr)
+
+    top_performer = ha.top_statewide_test_year_over_year_growth(grade: 8, :weighting => {:math => 0.5, :reading => 0.5, :writing => 0.0})
+    assert_equal "OURAY R-1", top_performer.first
+    assert_in_delta 0.153, top_performer.last, 0.005
+  end
 end
