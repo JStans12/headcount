@@ -9,7 +9,7 @@ module LoadData
   extend self
 
   def load_data(file_name)
-    loaded_data = csv_parse(file_name[2])
+    loaded_data = csv_parse(file_name)
 
     case file_name[0]
 
@@ -25,17 +25,17 @@ module LoadData
       return compile_statewide_subject(loaded_data, :writing)if file_name[1] == :writing
 
     when :economic_profile
-      return compile_median_household_income(loaded_data, :median_household_income) if file_name[1] == :median_household_income
-      return compile_children_in_poverty(loaded_data, :children_in_poverty) if file_name[1] == :children_in_poverty
+      return compile_economic_profile(loaded_data, :median_household_income) if file_name[1] == :median_household_income
+      return compile_economic_profile(loaded_data, :children_in_poverty) if file_name[1] == :children_in_poverty
       return compile_free_lunch_data(loaded_data, :free_or_reduced_price_lunch) if file_name[1] == :free_or_reduced_price_lunch
-      return compiled_title_i_data(loaded_data, :title_i) if file_name[1] == :title_i
+      return compile_economic_profile(loaded_data, :title_i) if file_name[1] == :title_i
 
     end
   end
 
   def csv_parse(file_name)
-    loaded_data = CSV.open file_name, headers: true, header_converters: :symbol
-    sanitized_data = loaded_data.map { |line| Sanitizer.clean_line(line) }
+    loaded_data = CSV.open file_name[2], headers: true, header_converters: :symbol
+    sanitized_data = loaded_data.map { |line| Sanitizer.clean_line(line, file_name) }
     sanitized_data
   end
 
@@ -49,7 +49,7 @@ module LoadData
   end
 
   def add_data_to_existing_enrollment(current_enrollment, line, enrollment_type)
-    current_enrollment[enrollment_type][line[:timeframe]] = line[:data].to_f
+    current_enrollment[enrollment_type][line[:timeframe]] = line[:data]
   end
 
   def compile_statewide_grade(file_content, grade)
@@ -59,7 +59,7 @@ module LoadData
       current_district[grade] = Hash.new unless current_district[grade]
       current_district[grade][line[:timeframe]] = Hash.new unless current_district[grade][line[:timeframe]]
       current_year = current_district[grade][line[:timeframe]]
-      current_year[line[:score]] = truncate(line[:data])
+      current_year[line[:score]] = line[:data]
       compiled_statewide
     end
   end
@@ -71,34 +71,16 @@ module LoadData
       current_district[subject] = Hash.new unless current_district[subject]
       current_district[subject][line[:race_ethnicity]] = Hash.new unless current_district[subject][line[:race_ethnicity]]
       current_year = current_district[subject][line[:race_ethnicity]]
-      current_year[line[:timeframe]] = truncate(line[:data])
+      current_year[line[:timeframe]] = line[:data]
       compiled_statewide
     end
   end
 
-  def compile_median_household_income(file_content, median)
+  def compile_economic_profile(file_content, median)
     file_content.reduce([]) do |compiled_economic_profile, line|
       compiled_economic_profile << hash_to_store_data(median, line) unless district_is_included(compiled_economic_profile, line)
       current_district = find_current_district(compiled_economic_profile, line)
-      current_district[median][line[:timeframe]] = line[:data].to_f
-      compiled_economic_profile
-    end
-  end
-
-  def compile_children_in_poverty(file_content, median)
-    file_content.reduce([]) do |compiled_economic_profile, line|
-      compiled_economic_profile << hash_to_store_data(median, line) unless district_is_included(compiled_economic_profile, line)
-      current_district = find_current_district(compiled_economic_profile, line)
-      current_district[median][line[:timeframe]] = line[:data].to_f
-      compiled_economic_profile
-    end
-  end
-
-  def compiled_title_i_data(file_content, median)
-    file_content.reduce([]) do |compiled_economic_profile, line|
-      compiled_economic_profile << hash_to_store_data(median, line) unless district_is_included(compiled_economic_profile, line)
-      current_district = find_current_district(compiled_economic_profile, line)
-      current_district[median][line[:timeframe]] = line[:data].to_f
+      current_district[median][line[:timeframe]] = line[:data]
       compiled_economic_profile
     end
   end
@@ -109,8 +91,8 @@ module LoadData
       current_district = find_current_district(compiled_economic_profile, line)
       current_district[subject][line[:timeframe]] = Hash.new unless current_district[subject][line[:timeframe]]
       current_year = current_district[subject][line[:timeframe]]
-      current_year[:percentage] = truncate(line[:data]) if line[:poverty_level] == "Eligible for Free or Reduced Lunch" && line[:dataformat] == "Percent"
-      current_year[:total] = line[:data].to_i if line[:poverty_level] == "Eligible for Free or Reduced Lunch" && line[:dataformat] == "Number"
+      current_year[:percentage] = line[:data] if line[:poverty_level] == "Eligible for Free or Reduced Lunch" && line[:dataformat] == "Percent"
+      current_year[:total] = line[:data] if line[:poverty_level] == "Eligible for Free or Reduced Lunch" && line[:dataformat] == "Number"
       compiled_economic_profile
     end
   end

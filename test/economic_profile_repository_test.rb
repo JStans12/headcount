@@ -4,7 +4,6 @@ require './lib/economic_profile_repository'
 class TestEconomicProfileRepository < Minitest::Test
 
   def test_inits_with_empty_economic_profiles_hash
-
     er = EconomicProfileRepository.new
     assert_equal ({}), er.economic_profiles
   end
@@ -22,19 +21,52 @@ class TestEconomicProfileRepository < Minitest::Test
    assert_equal "ACADEMY 20", ep.find_by_name("ACADEMY 20").name
   end
 
-  def test_load_data_creates_economic_profile_objects
+  def test_load_data_loads_economic_profile_repository
     epr = EconomicProfileRepository.new
-    epr.load_data({
+    files_by_type = {
       :economic_profile => {
       :median_household_income => "./data/Median household income.csv",
       :children_in_poverty => "./data/School-aged children in poverty.csv",
       :free_or_reduced_price_lunch => "./data/Students qualifying for free or reduced price lunch.csv",
       :title_i => "./data/Title I students.csv"
     }
-    })
+    }
+
+    assert epr.economic_profiles.empty?
+
+    epr.load_data(files_by_type)
+
+    refute epr.economic_profiles.empty?
+  end
+
+  def test_load_data_creates_economic_profile_objects
+    epr = EconomicProfileRepository.new
+    files_by_type = {
+      :economic_profile => {
+      :median_household_income => "./data/Median household income.csv",
+      :children_in_poverty => "./data/School-aged children in poverty.csv",
+      :free_or_reduced_price_lunch => "./data/Students qualifying for free or reduced price lunch.csv",
+      :title_i => "./data/Title I students.csv"
+    }
+    }
+
+    epr.load_data(files_by_type)
     ep = epr.find_by_name("ACADEMY 20")
 
     assert_equal EconomicProfile, ep.class
   end
+
+  def test_find_file_names_creates_arrays_of_file_names
+    epr = EconomicProfileRepository.new
+    files_by_type = {
+      :economic_profile => {
+      :median_household_income => "./data/Median household income.csv",
+      :children_in_poverty => "./data/School-aged children in poverty.csv"
+    }
+    }
+
+    assert_equal [:economic_profile, :median_household_income, "./data/Median household income.csv"], epr.find_file_names(files_by_type)[0]
+  end
+
 
 end
