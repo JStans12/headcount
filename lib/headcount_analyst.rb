@@ -8,7 +8,8 @@ class HeadcountAnalyst
   end
 
   def kindergarten_participation_rate_variation(dname, against)
-    find_average_participation(@dr.find_by_name(dname), :kindergarten_participation) / find_average_participation(@dr.find_by_name(against[:against]), :kindergarten_participation)
+    find_average_participation(@dr.find_by_name(dname), :kindergarten_participation).
+      /find_average_participation(@dr.find_by_name(against[:against]), :kindergarten_participation)
   end
 
   def find_average_participation(district, key)
@@ -35,17 +36,29 @@ class HeadcountAnalyst
     kindergarten_key = :kindergarten_participation
     highschool_key = :high_school_graduation
 
-    kindergarten_variation = find_average_participation(@dr.find_by_name(district), kindergarten_key) / find_average_participation(@dr.find_by_name("COLORADO"), kindergarten_key)
-    highschool_variation = find_average_participation(@dr.find_by_name(district), highschool_key) / find_average_participation(@dr.find_by_name("COLORADO"), highschool_key)
-    kindergarten_variation / highschool_variation
+    kindergarten_variation = find_average_participation(@dr.find_by_name(district), kindergarten_key).
+      /find_average_participation(@dr.find_by_name("COLORADO"), kindergarten_key)
+    highschool_variation = find_average_participation(@dr.find_by_name(district), highschool_key).
+      /find_average_participation(@dr.find_by_name("COLORADO"), highschool_key)
+    kindergarten_variation.
+    /highschool_variation
   end
 
-  def kindergarten_participation_correlates_with_high_school_graduation(district)
-    return statewide_kindergarten_participation_correlation if district[:for] == 'STATEWIDE'
-    return multiple_district_kindergarten_participation_correlation(district[:across]) if district.keys.include?(:across)
-    result = kindergarten_participation_against_high_school_graduation(district[:for])
-    return true if 0.6 < result && result < 1.5
-    return false
+  def kindergarten_participation_correlates_with_high_school_graduation(dist)
+    if dist[:for] == 'STATEWIDE'
+      return statewide_kindergarten_participation_correlation
+    elsif dist.keys.include?(:across)
+      return multi_dist_kin_participation_correlation(dist[:across])
+    end
+
+    result =
+      kindergarten_participation_against_high_school_graduation(dist[:for])
+
+    if 0.6 < result && result < 1.5
+      return true
+    else
+      return false
+    end
   end
 
   def statewide_kindergarten_participation_correlation
@@ -57,7 +70,7 @@ class HeadcountAnalyst
     return false
   end
 
-  def multiple_district_kindergarten_participation_correlation(districts)
+  def multi_dist_kin_participation_correlation(districts)
     full_districts = districts.reduce([]) do |result, district_name|
       result << @dr.find_by_name(district_name)
       result
@@ -71,13 +84,14 @@ class HeadcountAnalyst
   end
 
   def top_statewide_test_year_over_year_growth(testing_info)
-    raise InsufficientInformationError.new("Invalid Grade") if invalid_grade?(testing_info[:grade])
+    if invalid_grade?(testing_info[:grade])
+      raise InsufficientInformationError.new("Invalid Grade")
+    end
+
     testing_info[:grade] = find_grade(testing_info)
 
     if testing_info[:subject]
-      all_districts_growth = find_min_and_max(testing_info)
-      return all_districts_growth.max_by { |dg| dg[1] } unless testing_info[:top]
-      return all_districts_growth.sort_by { |dg| dg[1] }.last(testing_info[:top]).reverse if testing_info[:top]
+      return find_min_and_max_with_subject(testing_info)
     end
 
     unless testing_info[:subject]
@@ -91,6 +105,12 @@ class HeadcountAnalyst
       return all_districts_growth.max_by { |dg| dg[1] } unless testing_info[:top]
       return all_districts_growth.sort_by { |dg| dg[1] }.last(testing_info[:top]).reverse if testing_info[:top]
     end
+  end
+
+  def find_min_and_max_with_subject(testing_info)
+    all_districts_growth = find_min_and_max(testing_info)
+    return all_districts_growth.max_by { |dg| dg[1] } unless testing_info[:top]
+    return all_districts_growth.sort_by { |dg| dg[1] }.last(testing_info[:top]).reverse if testing_info[:top]
   end
 
   def invalid_grade?(grade)

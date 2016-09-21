@@ -37,16 +37,18 @@ class EconomicProfileRepository
   end
 
   def add_to_economic_profiles(current_economic_profile)
-      existing_economic_profile = @economic_profiles.find do |economic_profile|
-        economic_profile[1].name == current_economic_profile[:name] end
-      current_economic_profile.each do |economic_profile_key, economic_profile_data|
-        unless economic_profile_key == :name
-          existing_economic_profile[1].data[economic_profile_key] = economic_profile_data
+      existing_economic_profile = @economic_profiles.find do |econ_prof|
+        econ_prof[1].name == current_economic_profile[:name]
+      end
+      current_economic_profile.each do |econ_prof_key, econ_prof_data|
+        unless econ_prof_key == :name
+          existing_economic_profile[1].data[econ_prof_key] = econ_prof_data
         end
       end
   end
 
   def create_economic_profile_object(current_economic_profile)
-    @economic_profiles[current_economic_profile[:name]] = EconomicProfile.new(current_economic_profile)
+    @economic_profiles[current_economic_profile[:name]] =
+      EconomicProfile.new(current_economic_profile)
   end
 end
