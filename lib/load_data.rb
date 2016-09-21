@@ -107,15 +107,13 @@ module LoadData
     end
   end
 
-  def compile_economic_profile(file_content, median)
+  def compile_economic_profile(file_content, sub_type)
     file_content.reduce([]) do |compiled_economic_profile, line|
 
-      unless district_is_included(compiled_economic_profile, line)
-        compiled_economic_profile << hash_to_store_data(median, line)
-      end
+      create_hash_to_store_district(compiled_economic_profile, line, sub_type)
 
       current_district = find_current_district(compiled_economic_profile, line)
-      current_district[median][line[:timeframe]] = line[:data]
+      current_district[sub_type][line[:timeframe]] = line[:data]
       compiled_economic_profile
     end
   end
@@ -123,35 +121,41 @@ module LoadData
   def compile_free_lunch_data(file_content, subject)
     file_content.reduce([]) do |compiled_economic_profile, line|
 
-      create_hash_to_store_district(compiled_economic_profile, line, grade))
-
+      create_hash_to_store_district(compiled_economic_profile, line, subject)
       current_district = find_current_district(compiled_economic_profile, line)
+      create_hash_to_store_subtype(current_district, subject, line, :timeframe)
+      current_year = find_current_year(current_district, subject, line)
 
-      create_hash_to_store_type(current_district, :timeframe)
-      current_year = current_district[subject][line[:timeframe]]
+      find_percent_data(current_year, line)
+      find_number_data(current_year, line)
 
-      if line[:poverty_level] == "Eligible for Free or Reduced Lunch" &&
-         line[:dataformat] == "Percent"
-
-         current_year[:percentage] = line[:data]
-      end
-
-      if line[:poverty_level] == "Eligible for Free or Reduced Lunch" &&
-         line[:dataformat] == "Number"
-
-         current_year[:total] = line[:data]
-      end
       compiled_economic_profile
     end
   end
 
-  def create_hash_to_store_district(compiled_type, line, grade)
-    unless district_is_included(compiled_type, line)
-      compiled_type << hash_to_store_data(grade, line)
+  def find_percent_data(current_year, line)
+    if line[:poverty_level] == "Eligible for Free or Reduced Lunch" &&
+       line[:dataformat] == "Percent"
+
+       current_year[:percentage] = line[:data]
     end
   end
 
-  def create_hash_to_store_type(current_district, type)
+  def find_number_data(current_year, line)
+    if line[:poverty_level] == "Eligible for Free or Reduced Lunch" &&
+       line[:dataformat] == "Number"
+
+       current_year[:total] = line[:data]
+    end
+  end
+
+  def create_hash_to_store_district(compiled_statewide, line, grade)
+    unless district_is_included(compiled_statewide, line)
+      compiled_statewide << hash_to_store_data(grade, line)
+    end
+  end
+
+  def create_hash_to_store_type(current_district, grade)
     unless current_district[grade]
       current_district[grade] = Hash.new
     end
