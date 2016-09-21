@@ -8,7 +8,10 @@ class HeadcountAnalyst
   end
 
   def kindergarten_participation_rate_variation(dname, against)
-    find_average_participation(@dr.find_by_name(dname), :kindergarten_participation) / find_average_participation(@dr.find_by_name(against[:against]), :kindergarten_participation)
+    find_average_participation(
+      @dr.find_by_name(dname), :kindergarten_participation).
+        /find_average_participation(
+          @dr.find_by_name(against[:against]), :kindergarten_participation)
   end
 
   def find_average_participation(district, key)
@@ -35,62 +38,107 @@ class HeadcountAnalyst
     kindergarten_key = :kindergarten_participation
     highschool_key = :high_school_graduation
 
-    kindergarten_variation = find_average_participation(@dr.find_by_name(district), kindergarten_key) / find_average_participation(@dr.find_by_name("COLORADO"), kindergarten_key)
-    highschool_variation = find_average_participation(@dr.find_by_name(district), highschool_key) / find_average_participation(@dr.find_by_name("COLORADO"), highschool_key)
-    kindergarten_variation / highschool_variation
+    d = @dr.find_by_name(district)
+    dc = @dr.find_by_name("COLORADO")
+
+    kindergarten_variation = find_average_participation(d, kindergarten_key).
+      /find_average_participation(dc, kindergarten_key)
+
+    highschool_variation = find_average_participation(d, highschool_key).
+      /find_average_participation(dc, highschool_key)
+
+    kindergarten_variation.
+      /highschool_variation
   end
 
-  def kindergarten_participation_correlates_with_high_school_graduation(district)
-    return statewide_kindergarten_participation_correlation if district[:for] == 'STATEWIDE'
-    return multiple_district_kindergarten_participation_correlation(district[:across]) if district.keys.include?(:across)
-    result = kindergarten_participation_against_high_school_graduation(district[:for])
+  def kindergarten_participation_correlates_with_high_school_graduation(dist)
+    if dist[:for] == 'STATEWIDE'
+      return statewide_kindergarten_participation_correlation
+    elsif dist.keys.include?(:across)
+      return multi_dist_kin_participation_correlation(dist[:across])
+    end
+
+    result =
+      kindergarten_participation_against_high_school_graduation(dist[:for])
+
     return true if 0.6 < result && result < 1.5
     return false
   end
 
   def statewide_kindergarten_participation_correlation
     correlating_districts = @dr.districts.values.reduce(0) do |result, district|
-      result += 1 if kindergarten_participation_correlates_with_high_school_graduation(for: district.name)
+      d = {for: district.name}
+      if kindergarten_participation_correlates_with_high_school_graduation(d)
+        result += 1
+      end
       result
     end
     return true if (correlating_districts / @dr.districts.length) > 0.7
     return false
   end
 
-  def multiple_district_kindergarten_participation_correlation(districts)
+  def multi_dist_kin_participation_correlation(districts)
     full_districts = districts.reduce([]) do |result, district_name|
       result << @dr.find_by_name(district_name)
       result
     end
-    correlating_districts = full_districts.reduce(0) do |result, district|
-      result += 1 if kindergarten_participation_correlates_with_high_school_graduation(for: district.name)
-      result
-    end
+    correlating_districts = find_correlating_districts(full_districts)
+
     return true if (correlating_districts / full_districts.length) > 0.7
     return false
   end
 
+  def find_correlating_districts(full_districts)
+    full_districts.reduce(0) do |result, district|
+      d = {for: district.name}
+      if kindergarten_participation_correlates_with_high_school_graduation(d)
+        result += 1
+      end
+      result
+    end
+  end
+
   def top_statewide_test_year_over_year_growth(testing_info)
-    raise InsufficientInformationError.new("Invalid Grade") if invalid_grade?(testing_info[:grade])
+    if invalid_grade?(testing_info[:grade])
+      raise InsufficientInformationError.new("Invalid Grade")
+    end
+
     testing_info[:grade] = find_grade(testing_info)
 
     if testing_info[:subject]
-      all_districts_growth = find_min_and_max(testing_info)
-      return all_districts_growth.max_by { |dg| dg[1] } unless testing_info[:top]
-      return all_districts_growth.sort_by { |dg| dg[1] }.last(testing_info[:top]).reverse if testing_info[:top]
+      return find_min_and_max_with_subject(testing_info)
     end
 
     unless testing_info[:subject]
       testing_info[:subject] = :math
-      math_districts_growth = find_min_and_max(testing_info)
+      math_dis_growth = find_min_and_max(testing_info)
       testing_info[:subject] = :reading
-      reading_districts_growth = find_min_and_max(testing_info)
+      reading_dis_growth = find_min_and_max(testing_info)
       testing_info[:subject] = :writing
-      writing_districts_growth = find_min_and_max(testing_info)
-      all_districts_growth = average_districts_growth_across_subjects(math_districts_growth, reading_districts_growth, writing_districts_growth, testing_info)
-      return all_districts_growth.max_by { |dg| dg[1] } unless testing_info[:top]
-      return all_districts_growth.sort_by { |dg| dg[1] }.last(testing_info[:top]).reverse if testing_info[:top]
+      writing_dis_growth = find_min_and_max(testing_info)
+
+      all_dis_growth = average_districts_growth_across_subjects(
+        math_dis_growth, reading_dis_growth, writing_dis_growth, testing_info)
+
+      return top_district(all_dis_growth) unless testing_info[:top]
+      return top_num_districts(all_dis_growth, testing_info)
     end
+  end
+
+  def top_district(all_dis_growth)
+    all_dis_growth.max_by { |dg| dg[1] }
+  end
+
+  def top_num_districts(all_dis_growth, testing_info)
+    all_dis_growth.sort_by { |dg| dg[1] }.
+      last(testing_info[:top]).reverse if testing_info[:top]
+  end
+
+  def find_min_and_max_with_subject(testing_info)
+    all_dis_growth = find_min_and_max(testing_info)
+
+    return top_district(all_dis_growth) unless testing_info[:top]
+    return top_num_districts(all_dis_growth, testing_info)
   end
 
   def invalid_grade?(grade)
@@ -103,79 +151,96 @@ class HeadcountAnalyst
   end
 
   def find_min_and_max(testing_info)
-    @dr.statewide_repository.statewide.reduce([]) do |result, (district, statewide)|
+    @dr.statewide_repository.statewide.reduce([]) do |result, (dist, statewide)|
+
+      t_grade = testing_info[:grade]
+      t_sub = testing_info[:subject]
+      t_weight = testing_info[:weighting]
 
       unless testing_info[:weighting]
-        max = find_max(statewide, testing_info[:grade], testing_info[:subject])
-        min = find_min(statewide, testing_info[:grade], testing_info[:subject])
+        max = find_max(statewide, t_grade, t_sub)
+        min = find_min(statewide, t_grade, t_sub)
       end
 
       if testing_info[:weighting]
-        max = find_max_with_weight(statewide, testing_info[:grade], testing_info[:subject], testing_info[:weighting])
-        min = find_min_with_weight(statewide, testing_info[:grade], testing_info[:subject], testing_info[:weighting])
+        max = find_max_with_weight(statewide, t_grade, t_sub, t_weight)
+        min = find_min_with_weight(statewide, t_grade, t_sub, t_weight)
       end
 
-
-      if max[0] == min[0] || ((max[1] - min[1]) / (max[0] - min[0])).to_f.nan?
-        result << [district, 0]
-      end
-
-      unless max[0] == min[0] || ((max[1] - min[1]) / (max[0] - min[0])).to_f.nan?
-        result << [district, ((max[1] - min[1]) / (max[0] - min[0]))]
-      end
+      result << [dist, 0] if is_nan?(max, min)
+      result << [dist, growth_over_years(max, min)] unless is_nan?(max, min)
 
       result
     end
   end
 
+  def is_nan?(max, min)
+    max[0] == min[0] || ((max[1] - min[1]) / (max[0] - min[0])).to_f.nan?
+  end
+
+  def growth_over_years(max, min)
+    ((max[1] - min[1]) / (max[0] - min[0]))
+  end
+
   def find_max(statewide, grade, subject)
-    removed_zeros = statewide.data[grade].dup
-    removed_zeros.delete_if { |year, subjects| subjects[subject] == 0 || subjects[subject].nil? }
-    max = removed_zeros.max_by { |year, subjects| year }
+    years = statewide.data[grade].dup
+
+    remove_zeros(years, subject)
+
+    max = years.max_by { |year, subjects| year }
     return [max[0], max[1][subject]] unless max.nil?
     [1,0]
   end
 
   def find_min(statewide, grade, subject)
-    removed_zeros = statewide.data[grade].dup
-    removed_zeros.delete_if { |year, subjects| subjects[subject] == 0 || subjects[subject].nil? }
-    min = removed_zeros.min_by { |year, subjects| year }
+    years = statewide.data[grade].dup
+
+    remove_zeros(years, subject)
+
+    min = years.min_by { |year, subjects| year }
     return [min[0], min[1][subject]] unless min.nil?
     [0,0]
   end
 
   def find_max_with_weight(statewide, grade, subject, weighting)
-    removed_zeros = statewide.data[grade].dup
-    removed_zeros.delete_if { |year, subjects| subjects[subject] == 0 || subjects[subject].nil? }
-    max = removed_zeros.max_by { |year, subjects| year }
+    years = statewide.data[grade].dup
+
+    remove_zeros(years, subject)
+
+    max = years.max_by { |year, subjects| year }
     return [max[0], (max[1][subject] * weighting[subject])] unless max.nil?
     [1,0]
   end
 
   def find_min_with_weight(statewide, grade, subject, weighting)
-    removed_zeros = statewide.data[grade].dup
-    removed_zeros.delete_if { |year, subjects| subjects[subject] == 0 || subjects[subject].nil? }
-    min = removed_zeros.min_by { |year, subjects| year }
+    years = statewide.data[grade].dup
+
+    remove_zeros(years, subject)
+
+    min = years.min_by { |year, subjects| year }
     return [min[0], (min[1][subject] * weighting[subject])] unless min.nil?
     [0,0]
   end
 
-  def average_districts_growth_across_subjects(math, reading, writing, testing_info)
-    consolidated = consolidate_growth_to_district(math, reading, writing)
+  def remove_zeros(removed_zeros, subject)
+    removed_zeros.delete_if do |year, subjects|
+      subjects[subject] == 0 || subjects[subject].nil?
+    end
+  end
+
+  def average_districts_growth_across_subjects(math, read, writin, testing_info)
+    consolidated = consolidate_growth_to_district(math, read, writin)
     return find_average(consolidated) unless testing_info[:weighting]
     return find_average_weighted(consolidated) if testing_info[:weighting]
   end
 
   def consolidate_growth_to_district(math, reading, writing)
     mashed = []
-
     math.each { |a| mashed << a }
-
     reading.each { |a| mashed << a }
-
     writing.each { |a| mashed << a }
 
-    consolidated = mashed.group_by { |a| a[0] }
+    mashed.group_by { |a| a[0] }
   end
 
   def find_average(consolidated)

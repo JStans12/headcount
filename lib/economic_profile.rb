@@ -17,9 +17,11 @@ class EconomicProfile
   end
 
   def median_household_income_in_year(year)
-    incomes = @data[name][:median_household_income].keys.reduce([]) do |result, range|
+    incomes = median_household_income_range.reduce([]) do |result, range|
       expanded_range = (range[0]..range[1]).to_a
-      result << @data[name][:median_household_income][range] if expanded_range.include?(year)
+      if expanded_range.include?(year)
+        result << @data[name][:median_household_income][range]
+      end
       result
     end
     raise UnknownDataError.new("Unknown Data Error") if incomes.empty?
@@ -27,7 +29,7 @@ class EconomicProfile
   end
 
   def median_household_income_average
-    incomes = @data[name][:median_household_income].keys.reduce([]) do |result, range|
+    incomes = median_household_income_range.reduce([]) do |result, range|
       result << @data[name][:median_household_income][range]
       result
     end
@@ -60,5 +62,9 @@ class EconomicProfile
       raise UnknownDataError.new("Unknown Data Error")
     end
     @data[name][:title_i][year]
+  end
+
+  def median_household_income_range
+    @data[name][:median_household_income].keys
   end
 end
