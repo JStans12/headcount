@@ -71,7 +71,7 @@ class HeadcountAnalyst
   end
 
   def top_statewide_test_year_over_year_growth(testing_info)
-    raise InsufficientInformationError.new("Invalide Grade") if invalide_grade?(testing_info[:grade])
+    raise InsufficientInformationError.new("Invalid Grade") if invalid_grade?(testing_info[:grade])
     testing_info[:grade] = find_grade(testing_info)
 
     if testing_info[:subject]
@@ -93,7 +93,7 @@ class HeadcountAnalyst
     end
   end
 
-  def invalide_grade?(grade)
+  def invalid_grade?(grade)
     grade != 3 && grade != 8
   end
 

@@ -5,6 +5,7 @@ class EconomicProfile
   attr_accessor :name, :data
 
   def initialize(data)
+    @data = nil
     @name = data[:name]
     assign_data(data)
   end
@@ -34,22 +35,30 @@ class EconomicProfile
   end
 
   def children_in_poverty_in_year(year)
-    raise UnknownDataError.new("Unknown Data Error") unless @data[name][:children_in_poverty].keys.include?(year)
+    unless @data[name][:children_in_poverty].keys.include?(year)
+      raise UnknownDataError.new("Unknown Data Error")
+    end
     @data[name][:children_in_poverty][year]
   end
 
   def free_or_reduced_price_lunch_percentage_in_year(year)
-    raise UnknownDataError.new("Unknown Data Error") unless @data[name][:free_or_reduced_price_lunch].keys.include?(year)
+    unless @data[name][:free_or_reduced_price_lunch].keys.include?(year)
+      raise UnknownDataError.new("Unknown Data Error")
+    end
     @data[name][:free_or_reduced_price_lunch][year][:percentage]
   end
 
   def free_or_reduced_price_lunch_number_in_year(year)
-    raise UnknownDataError.new("Unknown Data Error") unless @data[name][:free_or_reduced_price_lunch].keys.include?(year)
+    unless @data[name][:free_or_reduced_price_lunch].keys.include?(year)
+      raise UnknownDataError.new("Unknown Data Error")
+    end
     @data[name][:free_or_reduced_price_lunch][year][:total]
   end
 
   def title_i_in_year(year)
-    raise UnknownDataError.new("Unknown Data Error") unless @data[name][:title_i].keys.include?(year)
+    unless @data[name][:title_i].keys.include?(year)
+      raise UnknownDataError.new("Unknown Data Error")
+    end
     @data[name][:title_i][year]
   end
 end

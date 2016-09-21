@@ -27,14 +27,23 @@ class EconomicProfileRepository
 
   def assign_economic_profile_objects(unique_districts)
     unique_districts.each do |current_economic_profile|
-      add_to_economic_profiles(current_economic_profile) if @economic_profiles[current_economic_profile[:name]]
-      create_economic_profile_object(current_economic_profile) unless @economic_profiles[current_economic_profile[:name]]
+      if @economic_profiles[current_economic_profile[:name]]
+        add_to_economic_profiles(current_economic_profile)
+      end
+      unless @economic_profiles[current_economic_profile[:name]]
+        create_economic_profile_object(current_economic_profile)
+      end
     end
   end
 
   def add_to_economic_profiles(current_economic_profile)
-      existing_economic_profile = @economic_profiles.find { |economic_profile| economic_profile[1].name == current_economic_profile[:name] }
-      current_economic_profile.each { |economic_profile_key, economic_profile_data| existing_economic_profile[1].data[economic_profile_key] = economic_profile_data unless economic_profile_key == :name }
+      existing_economic_profile = @economic_profiles.find do |economic_profile|
+        economic_profile[1].name == current_economic_profile[:name] end
+      current_economic_profile.each do |economic_profile_key, economic_profile_data|
+        unless economic_profile_key == :name
+          existing_economic_profile[1].data[economic_profile_key] = economic_profile_data
+        end
+      end
   end
 
   def create_economic_profile_object(current_economic_profile)

@@ -5,6 +5,7 @@ class StatewideTest
   attr_reader :name, :data
 
   def initialize(data)
+    @data = nil
     @name = data[:name]
     assign_data(data)
   end

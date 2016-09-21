@@ -29,14 +29,24 @@ class EnrollmentRepository
 
   def assign_enrollment_objects(unique_districts)
     unique_districts.each do |current_enrollment|
-      add_to_enrollments(current_enrollment) if @enrollments[current_enrollment[:name]]
-      create_enrollment_object(current_enrollment) unless @enrollments[current_enrollment[:name]]
+      if @enrollments[current_enrollment[:name]]
+        add_to_enrollments(current_enrollment)
+      end
+      unless @enrollments[current_enrollment[:name]]
+        create_enrollment_object(current_enrollment)
+      end
     end
   end
 
   def add_to_enrollments(current_enrollment)
-      existing_enrollment = @enrollments.find { |enrollment| enrollment[1].name == current_enrollment[:name] }
-      current_enrollment.each { |enrollment_key, enrollment_data| existing_enrollment[1].data[enrollment_key] = enrollment_data unless enrollment_key == :name }
+      existing_enrollment = @enrollments.find do |enrollment|
+        enrollment[1].name == current_enrollment[:name]
+      end
+      current_enrollment.each do |enrollment_key, enrollment_data|
+        unless enrollment_key == :name
+        existing_enrollment[1].data[enrollment_key] = enrollment_data
+        end
+      end
   end
 
   def create_enrollment_object(current_enrollment)
