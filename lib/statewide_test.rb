@@ -22,13 +22,21 @@ class StatewideTest
   end
 
   def proficient_by_race_or_ethnicity(race)
-    raise UnknownDataError.new("Unknown Data Error") unless allowed_races.include?(race)
+    unless allowed_races.include?(race)
+      raise UnknownDataError.new("Unknown Data Error")
+    end
+
     math = find_subject_by_ethnicity(race, :math)
     reading = find_subject_by_ethnicity(race, :reading)
     writing = find_subject_by_ethnicity(race, :writing)
+
     years = (math.keys << reading.keys << writing.keys).flatten.uniq
+
     years.reduce({}) do |result, year|
-      result[year] = { math: math[year].values[0], reading: reading[year].values[0], writing: writing[year].values[0] }
+      result[year] = { math: math[year].values[0],
+                       reading: reading[year].values[0],
+                       writing: writing[year].values[0] }
+
       result
     end
   end
@@ -41,16 +49,27 @@ class StatewideTest
   end
 
   def proficient_for_subject_by_grade_in_year(subject, grade, year)
-    raise UnknownDataError.new("Unknown Data Error") unless allowed_subjects.include?(subject)
+    unless allowed_subjects.include?(subject)
+      raise UnknownDataError.new("Unknown Data Error")
+    end
+
     grade_data = proficient_by_grade(grade)
-    return grade_data[year][subject] unless grade_data[year][subject] == 0.0
+    unless grade_data[year][subject] == 0.0
+      return grade_data[year][subject]
+    end
     return "N/A"
   end
 
   def proficient_for_subject_by_race_in_year(subject, race, year)
-    raise UnknownDataError.new("Unknown Data Error") unless allowed_subjects.include?(subject)
+    unless allowed_subjects.include?(subject)
+      raise UnknownDataError.new("Unknown Data Error")
+    end
+
     ethnicity_data = proficient_by_race_or_ethnicity(race)
-    return ethnicity_data[year][subject] unless ethnicity_data[year][subject] == 0.0
+
+    unless ethnicity_data[year][subject] == 0.0
+      return ethnicity_data[year][subject]
+    end
     return "N/A"
   end
 
@@ -59,6 +78,7 @@ class StatewideTest
   end
 
   def allowed_races
-    [:asian, :all_students, :black, :pacific_islander, :hispanic, :native_american, :two_or_more, :white]
+    [:asian, :all_students, :black, :pacific_islander,
+     :hispanic, :native_american, :two_or_more, :white]
   end
 end

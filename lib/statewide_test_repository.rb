@@ -30,14 +30,29 @@ class StatewideTestRepository
 
   def assign_statewide_objects(all_districts)
     all_districts.each do |current_district|
-      add_to_statewide_repository(current_district) if @statewide[current_district[:name]]
-      create_statewide_test_objects(current_district) unless @statewide[current_district[:name]]
+
+      if @statewide[current_district[:name]]
+        add_to_statewide_repository(current_district)
+      end
+
+      unless @statewide[current_district[:name]]
+        create_statewide_test_objects(current_district)
+      end
     end
   end
 
   def add_to_statewide_repository(current_district)
-    existing_statewide = @statewide.find { |statewide| statewide[1].name == current_district[:name] }
-    current_district.each { |statewide_key, statewide_data| existing_statewide[1].data[statewide_key] = statewide_data unless statewide_key == :name }
+    existing_statewide = @statewide.find do |statewide|
+      statewide[1].name == current_district[:name]
+    end
+
+    current_district.each do |statewide_key, statewide_data|
+
+      unless statewide_key == :name
+        existing_statewide[1].data[statewide_key] = statewide_data
+      end
+
+    end
   end
 
   def create_statewide_test_objects(current_district)

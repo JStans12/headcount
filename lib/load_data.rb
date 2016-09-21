@@ -13,34 +13,61 @@ module LoadData
     case file_name[0]
 
     when :enrollment
-      return compile_enrollment(loaded_data, :kindergarten_participation) if file_name[1] == :kindergarten
-      return compile_enrollment(loaded_data, :high_school_graduation) if file_name[1] == :high_school_graduation
+      return distribute_enrollment(file_name, loaded_data)
 
     when :statewide_testing
-      return compile_statewide_grade(loaded_data, :third_grade)if file_name[1] == :third_grade
-      return compile_statewide_grade(loaded_data, :eighth_grade)if file_name[1] == :eighth_grade
-      return compile_statewide_subject(loaded_data, :math)if file_name[1] == :math
-      return compile_statewide_subject(loaded_data, :reading)if file_name[1] == :reading
-      return compile_statewide_subject(loaded_data, :writing)if file_name[1] == :writing
+      return distribute_statewide(file_name, loaded_data)
 
     when :economic_profile
-      return compile_economic_profile(loaded_data, :median_household_income) if file_name[1] == :median_household_income
-      return compile_economic_profile(loaded_data, :children_in_poverty) if file_name[1] == :children_in_poverty
-      return compile_free_lunch_data(loaded_data, :free_or_reduced_price_lunch) if file_name[1] == :free_or_reduced_price_lunch
-      return compile_economic_profile(loaded_data, :title_i) if file_name[1] == :title_i
+      return distribute_economic(file_name, loaded_data)
 
     end
   end
 
+  def distribute_enrollment(file_name, loaded_data)
+    if file_name[1] == :kindergarten
+      return compile_enrollment(loaded_data, :kindergarten_participation)
+    end
+
+    return compile_enrollment(loaded_data, file_name[1])
+  end
+
+  def distribute_statewide(file_name, loaded_data)
+    if file_name[1] == :third_grade || file_name[1] == :eighth_grade
+      return compile_statewide_grade(loaded_data,  file_name[1])
+    end
+
+    if file_name[1] == :math ||
+       file_name[1] == :reading ||
+       file_name[1] == :writing
+      return compile_statewide_subject(loaded_data, file_name[1])
+    end
+  end
+
+  def distribute_economic(file_name, loaded_data)
+    if file_name[1] == :median_household_income ||
+       file_name[1] == :title_i ||
+       file_name[1] == :children_in_poverty
+      return compile_economic_profile(loaded_data, file_name[1])
+
+    else
+      return compile_free_lunch_data(loaded_data,:free_or_reduced_price_lunch)
+    end
+  end
+
   def csv_parse(file_name)
-    loaded_data = CSV.open file_name[2], headers: true, header_converters: :symbol
-    sanitized_data = loaded_data.map { |line| Sanitizer.clean_line(line, file_name) }
+    load_d = CSV.open file_name[2], headers: true, header_converters: :symbol
+    sanitized_data = load_d.map { |line| Sanitizer.clean_line(line, file_name) }
     sanitized_data
   end
 
   def compile_enrollment(file_content, enrollment_type)
     file_content.reduce([]) do |compiled_enrollment, line|
-      compiled_enrollment << hash_to_store_data(enrollment_type, line) unless district_is_included(compiled_enrollment, line)
+
+      unless district_is_included(compiled_enrollment, line)
+        compiled_enrollment << hash_to_store_data(enrollment_type, line)
+      end
+
       current_district = find_current_district(compiled_enrollment, line)
       add_data_to_existing_enrollment(current_district, line, enrollment_type)
       compiled_enrollment
@@ -53,11 +80,13 @@ module LoadData
 
   def compile_statewide_grade(file_content, grade)
     file_content.reduce([]) do |compiled_statewide, line|
-      compiled_statewide << hash_to_store_data(grade, line) unless district_is_included(compiled_statewide, line)
+
+      create_hash_to_store_district(compiled_statewide, line, grade)
       current_district = find_current_district(compiled_statewide, line)
-      current_district[grade] = Hash.new unless current_district[grade]
-      current_district[grade][line[:timeframe]] = Hash.new unless current_district[grade][line[:timeframe]]
-      current_year = current_district[grade][line[:timeframe]]
+      create_hash_to_store_type(current_district, grade)
+      create_hash_to_store_subtype(current_district, grade, line, :timeframe)
+      current_year = find_current_year(current_district, grade, line)
+
       current_year[line[:score]] = line[:data]
       compiled_statewide
     end
@@ -65,19 +94,26 @@ module LoadData
 
   def compile_statewide_subject(file_content, subject)
     file_content.reduce([]) do |compiled_statewide, line|
-      compiled_statewide << hash_to_store_data(subject, line) unless district_is_included(compiled_statewide, line)
+
+      create_hash_to_store_district(compiled_statewide, line, subject)
       current_district = find_current_district(compiled_statewide, line)
-      current_district[subject] = Hash.new unless current_district[subject]
-      current_district[subject][line[:race_ethnicity]] = Hash.new unless current_district[subject][line[:race_ethnicity]]
-      current_year = current_district[subject][line[:race_ethnicity]]
-      current_year[line[:timeframe]] = line[:data]
+      create_hash_to_store_type(current_district, subject)
+      create_hash_to_store_subtype( current_district, subject,
+                                    line, :race_ethnicity )
+
+      current_ethnicity = find_current_ethnicity(current_district,subject, line)
+      current_ethnicity[line[:timeframe]] = line[:data]
       compiled_statewide
     end
   end
 
   def compile_economic_profile(file_content, median)
     file_content.reduce([]) do |compiled_economic_profile, line|
-      compiled_economic_profile << hash_to_store_data(median, line) unless district_is_included(compiled_economic_profile, line)
+
+      unless district_is_included(compiled_economic_profile, line)
+        compiled_economic_profile << hash_to_store_data(median, line)
+      end
+
       current_district = find_current_district(compiled_economic_profile, line)
       current_district[median][line[:timeframe]] = line[:data]
       compiled_economic_profile
@@ -86,14 +122,56 @@ module LoadData
 
   def compile_free_lunch_data(file_content, subject)
     file_content.reduce([]) do |compiled_economic_profile, line|
-      compiled_economic_profile << hash_to_store_data(subject, line) unless district_is_included(compiled_economic_profile, line)
+
+      create_hash_to_store_district(compiled_economic_profile, line, grade))
+
       current_district = find_current_district(compiled_economic_profile, line)
-      current_district[subject][line[:timeframe]] = Hash.new unless current_district[subject][line[:timeframe]]
+
+      unless current_district[subject][line[:timeframe]]
+        current_district[subject][line[:timeframe]] = Hash.new
+      end
+
       current_year = current_district[subject][line[:timeframe]]
-      current_year[:percentage] = line[:data] if line[:poverty_level] == "Eligible for Free or Reduced Lunch" && line[:dataformat] == "Percent"
-      current_year[:total] = line[:data] if line[:poverty_level] == "Eligible for Free or Reduced Lunch" && line[:dataformat] == "Number"
+
+      if line[:poverty_level] == "Eligible for Free or Reduced Lunch" &&
+         line[:dataformat] == "Percent"
+
+         current_year[:percentage] = line[:data]
+      end
+
+      if line[:poverty_level] == "Eligible for Free or Reduced Lunch" &&
+         line[:dataformat] == "Number"
+
+         current_year[:total] = line[:data]
+      end
       compiled_economic_profile
     end
+  end
+
+  def create_hash_to_store_district(compiled_type, line, grade)
+    unless district_is_included(compiled_type, line)
+      compiled_type << hash_to_store_data(grade, line)
+    end
+  end
+
+  def create_hash_to_store_type(current_district, grade)
+    unless current_district[grade]
+      current_district[grade] = Hash.new
+    end
+  end
+
+  def create_hash_to_store_subtype(current_district, type, line, subtype)
+    unless current_district[type][line[subtype]]
+      current_district[type][line[subtype]] = Hash.new
+    end
+  end
+
+  def find_current_year(current_district, grade, line)
+    current_district[grade][line[:timeframe]]
+  end
+
+  def find_current_ethnicity(current_district, subject, line)
+    current_district[subject][line[:race_ethnicity]]
   end
 
   def district_is_included(compiled, line)
@@ -107,23 +185,4 @@ module LoadData
   def find_current_district(compiled, line)
     compiled.detect { |data| data.values.include?(line[:location]) }
   end
-
-  # def year_is_included
-  #   current_statewide_test[subject][line[:timeframe].to_i]
-  # end
-  #
-  # POSSIBLILITIES TO BREAK DOWN #
-
-  # # def year_is_included(grade, line)
-  # #   grade.any? {|g| g.values.include?(line[:timeframe])}
-  # # end
-  #
-  # def hash_to_store_subject(subject, line)
-  #   {name: line[subject], subject => Hash.new}
-  # end
-  #
-  # def subject_is_included(result, line, subject)
-  #   result.any? {|e| e.values.include?(line[subject])}
-  # end
-
 end

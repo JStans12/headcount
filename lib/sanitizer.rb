@@ -7,21 +7,40 @@ module Sanitizer
 
   def clean_line(line, file_name)
     line[:timeframe] = clean_timeframe(line[:timeframe])
-    line[:data] = clean_data(line[:data], file_name, line) if line[:data]
-    line[:score] = clean_score(line[:score]) if line[:score]
     line[:location] = clean_location(line[:location])
-    line[:race_ethnicity] = clean_ethnicity(line[:race_ethnicity]) if line[:race_ethnicity]
+
+    if line[:data]
+      line[:data] = clean_data(line[:data], file_name, line)
+    end
+
+    if line[:score]
+      line[:score] = clean_score(line[:score])
+    end
+
+    if line[:race_ethnicity]
+      line[:race_ethnicity] = clean_ethnicity(line[:race_ethnicity])
+    end
+
     line
   end
 
-  def clean_timeframe(timeframe)
-    return timeframe.to_i                                 unless timeframe.include?('-')
-    return timeframe.split('-').map! { |year| year.to_i } if timeframe.include?('-')
+  def clean_timeframe(tf)
+    return tf.to_i                                 unless tf.include?('-')
+    return tf.split('-').map! { |year| year.to_i } if tf.include?('-')
   end
 
   def clean_data(data, file_name, line)
-    return data.to_i      if file_name[1] == :free_or_reduced_price_lunch && line[:dataformat] == "Number"
-    return truncate(data) if file_name[0] == :statewide_testing || file_name[1] == :free_or_reduced_price_lunch && line[:dataformat] == "Percent"
+    if file_name[1] == :free_or_reduced_price_lunch &&
+       line[:dataformat] == "Number"
+
+      return data.to_i
+    end
+    if file_name[0] == :statewide_testing ||
+       (file_name[1] == :free_or_reduced_price_lunch &&
+       line[:dataformat] == "Percent")
+
+       return truncate(data)
+    end
     return data.to_f
   end
 
