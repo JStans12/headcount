@@ -10,6 +10,9 @@ class DistrictRepository
 
   def initialize
     @districts = {}
+    @economic_repository = nil
+    @enrollment_repository = nil
+    @statewide_repository = nil
   end
 
   def find_by_name(name)
@@ -24,9 +27,12 @@ class DistrictRepository
     find_file_names_with_type(files_by_type).each do |file_name_with_type|
       unique_districts = LoadData.load_data(file_name_with_type.flatten)
       create_district_objects(unique_districts)
-      load_for_enrollment(files_by_type, unique_districts) if primary_file_type(:enrollment, file_name_with_type)
-      load_for_statewide(files_by_type, unique_districts) if primary_file_type(:statewide_testing, file_name_with_type)
-      load_for_economic(files_by_type, unique_districts) if primary_file_type(:economic_profile, file_name_with_type)
+      load_for_enrollment(files_by_type, unique_districts) if
+        primary_file_type(:enrollment, file_name_with_type)
+      load_for_statewide(files_by_type, unique_districts) if
+        primary_file_type(:statewide_testing, file_name_with_type)
+      load_for_economic(files_by_type, unique_districts) if
+        primary_file_type(:economic_profile, file_name_with_type)
     end
   end
 

@@ -10,7 +10,6 @@ module LoadData
 
   def load_data(file_name)
     loaded_data = csv_parse(file_name)
-
     case file_name[0]
 
     when :enrollment

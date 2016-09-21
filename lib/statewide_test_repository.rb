@@ -27,7 +27,7 @@ class StatewideTestRepository
       file.to_a.map { |file_name| file_name.unshift(file_type) }
     end
   end
-  
+
   def assign_statewide_objects(all_districts)
     all_districts.each do |current_district|
       add_to_statewide_repository(current_district) if @statewide[current_district[:name]]
