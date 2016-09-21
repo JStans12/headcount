@@ -127,10 +127,7 @@ module LoadData
 
       current_district = find_current_district(compiled_economic_profile, line)
 
-      unless current_district[subject][line[:timeframe]]
-        current_district[subject][line[:timeframe]] = Hash.new
-      end
-
+      create_hash_to_store_type(current_district, :timeframe)
       current_year = current_district[subject][line[:timeframe]]
 
       if line[:poverty_level] == "Eligible for Free or Reduced Lunch" &&
@@ -154,7 +151,7 @@ module LoadData
     end
   end
 
-  def create_hash_to_store_type(current_district, grade)
+  def create_hash_to_store_type(current_district, type)
     unless current_district[grade]
       current_district[grade] = Hash.new
     end
