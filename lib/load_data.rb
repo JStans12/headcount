@@ -64,9 +64,7 @@ module LoadData
   def compile_enrollment(file_content, enrollment_type)
     file_content.reduce([]) do |compiled_enrollment, line|
 
-      unless district_is_included(compiled_enrollment, line)
-        compiled_enrollment << hash_to_store_data(enrollment_type, line)
-      end
+      create_hash_to_store_district(compiled_enrollment, line, enrollment_type)
 
       current_district = find_current_district(compiled_enrollment, line)
       add_data_to_existing_enrollment(current_district, line, enrollment_type)
@@ -83,7 +81,6 @@ module LoadData
 
       create_hash_to_store_district(compiled_statewide, line, grade)
       current_district = find_current_district(compiled_statewide, line)
-      create_hash_to_store_type(current_district, grade)
       create_hash_to_store_subtype(current_district, grade, line, :timeframe)
       current_year = find_current_year(current_district, grade, line)
 
@@ -97,7 +94,6 @@ module LoadData
 
       create_hash_to_store_district(compiled_statewide, line, subject)
       current_district = find_current_district(compiled_statewide, line)
-      create_hash_to_store_type(current_district, subject)
       create_hash_to_store_subtype( current_district, subject,
                                     line, :race_ethnicity )
 
@@ -152,12 +148,6 @@ module LoadData
   def create_hash_to_store_district(compiled_statewide, line, grade)
     unless district_is_included(compiled_statewide, line)
       compiled_statewide << hash_to_store_data(grade, line)
-    end
-  end
-
-  def create_hash_to_store_type(current_district, grade)
-    unless current_district[grade]
-      current_district[grade] = Hash.new
     end
   end
 

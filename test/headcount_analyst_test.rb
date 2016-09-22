@@ -148,4 +148,18 @@ class TestHeadCountAnalyst < Minitest::Test
     assert_equal "OURAY R-1", top_performer.first
     assert_in_delta 0.153, top_performer.last, 0.005
   end
+
+  def test_we_can_find_top_num_accross_all_districts
+    dr = DistrictRepository.new
+    dr.load_data({
+      :statewide_testing => {
+        :third_grade => "./data/3rd grade students scoring proficient or above on the CSAP_TCAP.csv",
+        :eighth_grade => "./data/8th grade students scoring proficient or above on the CSAP_TCAP.csv" }})
+
+    ha = HeadcountAnalyst.new(dr)
+    expected = [["SANGRE DE CRISTO RE-22J", 0.07133333333333335], ["MANCOS RE-6", 0.07130555555555555], ["OTIS R-3", 0.0675]]
+
+    assert_equal expected, ha.top_statewide_test_year_over_year_growth(grade: 3, top: 3)
+  end
+
 end
